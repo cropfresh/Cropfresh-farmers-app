@@ -1,0 +1,388 @@
+# .github/workflows/cd.yml
+
+name: Continuous Deployment
+
+# Events that trigger this workflow
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+# Environment variables
+env:
+  FLUTTER_VERSION: '3.24.0'
+
+jobs:
+  # ============================================================================
+  # PRE-DEPLOYMENT CHECKS
+  # ============================================================================
+  
+  pre-deployment:
+    name: 🔍 Pre-deployment Checks
+    runs-on: ubuntu-latest
+    
+    outputs:
+      should-deploy: ${{ steps.checks.outputs.should-deploy }}
+      version: ${{ steps.version.outputs.version }}
+      
+    steps:
+      - name: 📚 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🛠️ Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      # * PRE-CHECK: Ensure all tests pass
+      - name: 🧪 Run tests
+        run: flutter test
+
+      # * PRE-CHECK: Static analysis
+      - name: 🔍 Analyze code
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      # * VERSION: Generate version number
+      - name: 🏷️ Generate version
+        id: version
+        run: |
+          VERSION="1.0.${{ github.run_number }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION"
+
+      # * DECISION: Determine if deployment should proceed
+      - name: ✅ Deployment decision
+        id: checks
+        run: |
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+          echo "All pre-deployment checks passed"
+
+  # ============================================================================
+  # BUILD ANDROID
+  # ============================================================================
+  
+  build-android:
+    name: 🤖 Build Android
+    runs-on: ubuntu-latest
+    needs: pre-deployment
+    if: needs.pre-deployment.outputs.should-deploy == 'true'
+    
+    steps:
+      - name: 📚 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      # * SETUP: Configure Android signing
+      - name: 🔑 Setup Android signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          # ! SECURITY: Decode and setup keystore
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+            
+            # Create key.properties file
+            cat > android/key.properties << EOF
+            storePassword=$ANDROID_KEYSTORE_PASSWORD
+            keyPassword=$ANDROID_KEY_PASSWORD
+            keyAlias=$ANDROID_KEY_ALIAS
+            storeFile=upload-keystore.jks
+            EOF
+          fi
+
+      # * BUILD: Create production app bundle
+      - name: 🔨 Build App Bundle
+        run: |
+          flutter build appbundle --release \
+            --build-name=${{ needs.pre-deployment.outputs.version }} \
+            --build-number=${{ github.run_number }}
+
+      # * UPLOAD: Store build artifacts
+      - name: 📁 Upload App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-app-bundle
+          path: build/app/outputs/bundle/release/app-release.aab
+
+      # * BUILD: Create APK for testing
+      - name: 🔨 Build APK
+        run: |
+          flutter build apk --release \
+            --build-name=${{ needs.pre-deployment.outputs.version }} \
+            --build-number=${{ github.run_number }}
+
+      - name: 📁 Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  # ============================================================================
+  # BUILD IOS
+  # ============================================================================
+  
+  build-ios:
+    name: 🍎 Build iOS
+    runs-on: macos-latest
+    needs: pre-deployment
+    if: needs.pre-deployment.outputs.should-deploy == 'true'
+    
+    steps:
+      - name: 📚 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      # * SETUP: Configure iOS certificates and provisioning
+      - name: 🔑 Setup iOS certificates
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          # ! SECURITY: Setup iOS certificates and provisioning profiles
+          if [ -n "$IOS_CERTIFICATE_BASE64" ]; then
+            echo "Setting up iOS signing..."
+            # Decode certificate
+            echo "$IOS_CERTIFICATE_BASE64" | base64 --decode > ios_certificate.p12
+            
+            # Decode provisioning profile
+            echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > ios_provisioning_profile.mobileprovision
+            
+            # Import certificate to keychain
+            security create-keychain -p "" build.keychain
+            security import ios_certificate.p12 -k ~/Library/Keychains/build.keychain -P "$IOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+            security list-keychains -s ~/Library/Keychains/build.keychain
+            security default-keychain -s ~/Library/Keychains/build.keychain
+            security unlock-keychain -p "" ~/Library/Keychains/build.keychain
+            security set-key-partition-list -S apple-tool:,apple: -s -k "" ~/Library/Keychains/build.keychain
+            
+            # Install provisioning profile
+            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+            cp ios_provisioning_profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          fi
+
+      # * BUILD: Create iOS archive
+      - name: 🔨 Build iOS
+        run: |
+          flutter build ios --release \
+            --build-name=${{ needs.pre-deployment.outputs.version }} \
+            --build-number=${{ github.run_number }}
+
+      # * ARCHIVE: Create IPA
+      - name: 📦 Create IPA
+        run: |
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath build/Runner.xcarchive \
+            archive
+          
+          xcodebuild -exportArchive \
+            -archivePath build/Runner.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath build/
+
+      - name: 📁 Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: ios/build/*.ipa
+
+  # ============================================================================
+  # DEPLOY ANDROID
+  # ============================================================================
+  
+  deploy-android:
+    name: 🚀 Deploy Android
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, build-android]
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    
+    steps:
+      - name: 📚 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📁 Download App Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: android-app-bundle
+          path: ./
+
+      # * DEPLOY: To Google Play Store
+      - name: 🏪 Deploy to Play Store
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        if: env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != ''
+        run: |
+          # ! SECURITY: Setup Google Play service account
+          echo "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > service-account.json
+          
+          # NOTE: Use fastlane or gradle play publisher for deployment
+          echo "Deploying to Google Play Store..."
+          # TODO: Implement actual Play Store deployment
+          # fastlane android deploy
+
+  # ============================================================================
+  # DEPLOY IOS
+  # ============================================================================
+  
+  deploy-ios:
+    name: 🚀 Deploy iOS
+    runs-on: macos-latest
+    needs: [pre-deployment, build-ios]
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    
+    steps:
+      - name: 📚 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📁 Download IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-ipa
+          path: ./
+
+      # * DEPLOY: To App Store Connect
+      - name: 🍎 Deploy to App Store
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        if: env.APP_STORE_CONNECT_API_KEY != ''
+        run: |
+          # ! SECURITY: Setup App Store Connect API key
+          echo "Deploying to App Store Connect..."
+          # NOTE: Use altool or fastlane for deployment
+          # TODO: Implement actual App Store deployment
+          # fastlane ios deploy
+
+  # ============================================================================
+  # POST-DEPLOYMENT
+  # ============================================================================
+  
+  post-deployment:
+    name: 📢 Post Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-android, deploy-ios]
+    if: always()
+    
+    steps:
+      - name: 📊 Update deployment status
+        run: |
+          echo "Deployment completed"
+          echo "Android status: ${{ needs.deploy-android.result }}"
+          echo "iOS status: ${{ needs.deploy-ios.result }}"
+
+      # * NOTIFY: Send deployment notifications
+      - name: 📢 Send notifications
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: |
+          # TODO: Implement notification system
+          echo "Sending deployment notifications..."
+          
+          # EXAMPLE: Slack notification
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"🚀 CropFresh app deployed successfully!\"}" \
+              "$SLACK_WEBHOOK_URL"
+          fi
+
+      # * CLEANUP: Remove sensitive files
+      - name: 🧹 Cleanup
+        run: |
+          # ! SECURITY: Remove any remaining sensitive files
+          rm -f service-account.json || true
+          rm -f ios_certificate.p12 || true
+          rm -f ios_provisioning_profile.mobileprovision || true
+
+  # ============================================================================
+  # RELEASE CREATION
+  # ============================================================================
+  
+  create-release:
+    name: 🏷️ Create Release
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, deploy-android, deploy-ios]
+    if: needs.deploy-android.result == 'success' || needs.deploy-ios.result == 'success'
+    
+    steps:
+      - name: 📚 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📁 Download all artifacts
+        uses: actions/download-artifact@v4
+
+      # * RELEASE: Create GitHub release
+      - name: 🏷️ Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.pre-deployment.outputs.version }}
+          release_name: CropFresh v${{ needs.pre-deployment.outputs.version }}
+          body: |
+            ## 🌱 CropFresh Release v${{ needs.pre-deployment.outputs.version }}
+            
+            ### ✨ What's New
+            - Enhanced offline functionality
+            - Improved crop health monitoring
+            - Performance optimizations
+            - Bug fixes and stability improvements
+            
+            ### 📱 Downloads
+            - Android: Check Google Play Store
+            - iOS: Check App Store
+            
+            ### 🔧 Technical Details
+            - Flutter: ${{ env.FLUTTER_VERSION }}
+            - Build Number: ${{ github.run_number }}
+            - Commit: ${{ github.sha }}
+          draft: false
+          prerelease: ${{ github.event.inputs.environment == 'staging' }} 
