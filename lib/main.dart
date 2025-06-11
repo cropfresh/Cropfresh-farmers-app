@@ -1,122 +1,130 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'core/theme/app_theme.dart';
+import 'features/splash/splash_screen.dart';
+import 'features/home/home_screen.dart';
 
+/// * CROPFRESH FARMERS APP
+/// * Main application entry point following Material Design 3 principles
+/// * Implements splash screen with animated logo and proper navigation
+/// * Uses 60-30-10 color rule throughout the application
 void main() {
-  runApp(const MyApp());
+  // * INITIALIZE APP
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // ! SECURITY: Set preferred device orientations
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
+  // * RUN APP
+  runApp(const CropFreshApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+/// * CROPFRESH APPLICATION ROOT
+/// * Root application widget that sets up theme and navigation
+/// * Follows Material Design 3 specifications with custom CropFresh theme
+class CropFreshApp extends StatelessWidget {
+  const CropFreshApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // * APP METADATA
+      title: 'CropFresh - Empowering Farmers',
+      debugShowCheckedModeBanner: false, // Remove debug banner for clean UI
+      
+      // * MATERIAL DESIGN 3 THEME CONFIGURATION
+      theme: CropFreshTheme.lightTheme, // Light theme following 60-30-10 rule
+      darkTheme: CropFreshTheme.darkTheme, // Dark theme adaptation
+      themeMode: ThemeMode.system, // Respect system theme preference
+      
+      // * INITIAL SCREEN: Start with splash screen
+      home: const CropFreshSplashWrapper(),
+      
+      // * MATERIAL APP CONFIGURATION
+      builder: (context, child) {
+        // * RESPONSIVE DESIGN: Handle different screen sizes
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: MediaQuery.of(context).textScaler.clamp(
+              minScaleFactor: 0.8, // Minimum text scale
+              maxScaleFactor: 1.2, // Maximum text scale
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+/// * SPLASH SCREEN WRAPPER
+/// * Handles splash screen display and navigation to main app
+/// * Manages the transition from splash to home screen
+class CropFreshSplashWrapper extends StatefulWidget {
+  const CropFreshSplashWrapper({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CropFreshSplashWrapper> createState() => _CropFreshSplashWrapperState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _CropFreshSplashWrapperState extends State<CropFreshSplashWrapper> {
+  /// * Current screen state
+  bool _showSplash = true;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+  /// * Initialize application
+  /// * Performs any necessary app initialization tasks
+  Future<void> _initializeApp() async {
+    try {
+      // * INITIALIZATION TASKS
+      // TODO: Initialize database
+      // TODO: Load user preferences
+      // TODO: Check authentication status
+      // TODO: Fetch initial data
+      
+      // * Simulate initialization time (minimum 2 seconds for UX)
+      await Future.delayed(const Duration(milliseconds: 2000));
+      
+      // NOTE: Additional initialization can be added here
+      
+    } catch (error) {
+      // ! ERROR HANDLING: Log initialization errors
+      debugPrint('App initialization error: $error');
+      
+      // FIXME: Implement proper error handling and user notification
+      
+    }
+  }
+
+  /// * Handle splash completion
+  /// * Called when splash screen animation completes
+  void _onSplashComplete() {
+    if (mounted) {
+      setState(() {
+        _showSplash = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    // * CONDITIONAL RENDERING: Show splash or main app
+    if (_showSplash) {
+      // * SPLASH SCREEN: Animated logo and branding
+      return CropFreshSplashScreen(
+        onSplashComplete: _onSplashComplete,
+      );
+    } else {
+      // * MAIN APP: Navigate to home screen
+      return const CropFreshHomeScreen();
+    }
   }
 }

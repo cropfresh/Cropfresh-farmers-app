@@ -208,9 +208,9 @@ class CropFreshColors {
   // UTILITY METHODS
   // ============================================================================
   
-  /// Get color with opacity
+  /// Get color with opacity (Material 3 compatible)
   static Color withOpacity(Color color, double opacity) {
-    return color.withOpacity(opacity);
+    return color.withValues(alpha: opacity);
   }
   
   /// Get contrast color (black or white) for given background
