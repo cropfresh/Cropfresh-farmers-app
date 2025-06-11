@@ -34,16 +34,17 @@ jobs:
       - name: 🛠️ Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.32.2'
           channel: 'stable'
           cache: true
 
+      # TODO: Enable Java setup when Android development starts
       # * SETUP: Configure Java for Android builds
-      - name: ☕ Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+      # - name: ☕ Setup Java
+      #   uses: actions/setup-java@v4
+      #   with:
+      #     distribution: 'zulu'
+      #     java-version: '17'
 
       # * CACHE: Dependencies for faster builds
       - name: 📦 Cache pub dependencies
@@ -64,10 +65,11 @@ jobs:
       - name: 🔍 Verify Flutter installation
         run: flutter doctor -v
 
-      # * GENERATE: Run code generation
-      - name: 🏗️ Generate code
-        run: |
-          flutter packages pub run build_runner build --delete-conflicting-outputs
+      # * GENERATE: Run code generation (if needed)
+      # TODO: Enable when build_runner is added to dependencies
+      # - name: 🏗️ Generate code
+      #   run: |
+      #     flutter packages pub run build_runner build --delete-conflicting-outputs
 
       # * ANALYZE: Static code analysis
       - name: 🔍 Analyze code
@@ -92,33 +94,46 @@ jobs:
           flags: unittests
           name: codecov-umbrella
 
-      # * BUILD: Android APK (Debug)
-      - name: 🔨 Build Android APK (Debug)
+      # * BUILD: Web (for development)
+      - name: 🌐 Build Web
         run: |
-          flutter build apk --debug --build-name=1.0.0+${{ github.run_number }}
+          flutter build web --release --build-name=1.0.0+${{ github.run_number }}
+
+      # TODO: Enable Android/iOS builds when ready for mobile development
+      # * BUILD: Android APK (Debug)
+      # - name: 🔨 Build Android APK (Debug)
+      #   run: |
+      #     flutter build apk --debug --build-name=1.0.0+${{ github.run_number }}
 
       # * BUILD: Android Bundle (Release)
-      - name: 🔨 Build Android Bundle (Release)  
-        run: |
-          flutter build appbundle --release --build-name=1.0.0+${{ github.run_number }}
+      # - name: 🔨 Build Android Bundle (Release)  
+      #   run: |
+      #     flutter build appbundle --release --build-name=1.0.0+${{ github.run_number }}
 
       # * BUILD: iOS (without signing)
-      - name: 🍎 Build iOS (No Codesign)
-        run: |
-          flutter build ios --no-codesign --release --build-name=1.0.0+${{ github.run_number }}
+      # - name: 🍎 Build iOS (No Codesign)
+      #   run: |
+      #     flutter build ios --no-codesign --release --build-name=1.0.0+${{ github.run_number }}
 
       # * ARTIFACTS: Upload build artifacts
-      - name: 📁 Upload APK artifact
+      - name: 📁 Upload Web Build
         uses: actions/upload-artifact@v4
         with:
-          name: apk-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: web-build
+          path: build/web/
 
-      - name: 📁 Upload App Bundle artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appbundle-release
-          path: build/app/outputs/bundle/release/app-release.aab
+      # TODO: Enable when mobile builds are ready
+      # - name: 📁 Upload APK artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: apk-debug
+      #     path: build/app/outputs/flutter-apk/app-debug.apk
+
+      # - name: 📁 Upload App Bundle artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: appbundle-release
+      #     path: build/app/outputs/bundle/release/app-release.aab
 
   # ============================================================================
   # SECURITY SCAN
@@ -135,7 +150,7 @@ jobs:
       - name: 🛠️ Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.32.2'
           channel: 'stable'
 
       - name: 📦 Install dependencies
@@ -167,16 +182,18 @@ jobs:
       - name: 🛠️ Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.32.2'
           channel: 'stable'
 
       - name: 📦 Install dependencies
         run: flutter pub get
 
-      # * PERFORMANCE: Analyze app size
+      # * PERFORMANCE: Analyze app size (Web for now)
       - name: 📏 Analyze app size
         run: |
-          flutter build apk --analyze-size --target-platform android-arm64
+          flutter build web --analyze-size
+          # TODO: Enable APK analysis when Android development starts
+          # flutter build apk --analyze-size --target-platform android-arm64
           
       # * PERFORMANCE: Check for performance issues
       - name: ⚡ Performance check
@@ -199,7 +216,7 @@ jobs:
       - name: 🛠️ Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.32.2'
           channel: 'stable'
 
       - name: 📦 Install dependencies
@@ -239,7 +256,7 @@ jobs:
       - name: 🛠️ Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.32.2'
           channel: 'stable'
 
       - name: 📦 Install dependencies
