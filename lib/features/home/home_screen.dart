@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/colors.dart';
 import '../registration/registration_flow.dart';
+import '../login/login_screen.dart';
 
 /// * CROPFRESH ULTRA-MINIMAL HOME SCREEN
 /// * Material 3 design with essential elements only
@@ -269,21 +270,8 @@ class _CropFreshHomeScreenState extends State<CropFreshHomeScreen>
   void _handleLogin(BuildContext context) {
     HapticFeedback.lightImpact();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Login feature coming soon!',
-          style: TextStyle(
-            color: CropFreshColors.onGreen30,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        backgroundColor: CropFreshColors.green30Primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.all(16),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const LoginScreen()));
   }
 }
