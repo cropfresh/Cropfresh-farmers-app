@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/theme/app_theme.dart';
-import 'features/splash/splash_screen.dart';
+import 'features/splash/splash_screen_v2.dart';
 import 'features/home/home_screen.dart';
 
 /// * CROPFRESH FARMERS APP
@@ -11,13 +11,13 @@ import 'features/home/home_screen.dart';
 void main() {
   // * INITIALIZE APP
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // ! SECURITY: Set preferred device orientations
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   // * RUN APP
   runApp(const CropFreshApp());
 }
@@ -34,15 +34,13 @@ class CropFreshApp extends StatelessWidget {
       // * APP METADATA
       title: 'CropFresh - Empowering Farmers',
       debugShowCheckedModeBanner: false, // Remove debug banner for clean UI
-      
       // * MATERIAL DESIGN 3 THEME CONFIGURATION
       theme: CropFreshTheme.lightTheme, // Light theme following 60-30-10 rule
       darkTheme: CropFreshTheme.darkTheme, // Dark theme adaptation
       themeMode: ThemeMode.system, // Respect system theme preference
-      
       // * INITIAL SCREEN: Start with splash screen
       home: const CropFreshSplashWrapper(),
-      
+
       // * MATERIAL APP CONFIGURATION
       builder: (context, child) {
         // * RESPONSIVE DESIGN: Handle different screen sizes
@@ -89,18 +87,16 @@ class _CropFreshSplashWrapperState extends State<CropFreshSplashWrapper> {
       // TODO: Load user preferences
       // TODO: Check authentication status
       // TODO: Fetch initial data
-      
+
       // * Simulate initialization time (minimum 2 seconds for UX)
       await Future.delayed(const Duration(milliseconds: 2000));
-      
+
       // NOTE: Additional initialization can be added here
-      
     } catch (error) {
       // ! ERROR HANDLING: Log initialization errors
       debugPrint('App initialization error: $error');
-      
+
       // FIXME: Implement proper error handling and user notification
-      
     }
   }
 
@@ -119,9 +115,7 @@ class _CropFreshSplashWrapperState extends State<CropFreshSplashWrapper> {
     // * CONDITIONAL RENDERING: Show splash or main app
     if (_showSplash) {
       // * SPLASH SCREEN: Animated logo and branding
-      return CropFreshSplashScreen(
-        onSplashComplete: _onSplashComplete,
-      );
+      return CropFreshSplashScreenV2(onSplashComplete: _onSplashComplete);
     } else {
       // * MAIN APP: Navigate to home screen
       return const CropFreshHomeScreen();

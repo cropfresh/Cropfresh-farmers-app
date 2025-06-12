@@ -1,385 +1,289 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/colors.dart';
+import '../registration/registration_flow.dart';
 
-/// * CROPFRESH HOME SCREEN
-/// * Main dashboard screen following Material Design 3 principles
-/// * Temporary placeholder for the main app functionality
-/// * Uses 60-30-10 color rule throughout the interface
-class CropFreshHomeScreen extends StatelessWidget {
+/// * CROPFRESH ULTRA-MINIMAL HOME SCREEN
+/// * Material 3 design with essential elements only
+/// * Logo, text logo, slogan, register and login buttons
+/// * Follows Material 3 design system and color specifications
+class CropFreshHomeScreen extends StatefulWidget {
   const CropFreshHomeScreen({super.key});
 
   @override
+  State<CropFreshHomeScreen> createState() => _CropFreshHomeScreenState();
+}
+
+class _CropFreshHomeScreenState extends State<CropFreshHomeScreen>
+    with TickerProviderStateMixin {
+  // ============================================================================
+  // * MATERIAL 3 ANIMATION CONTROLLER
+  // ============================================================================
+
+  /// * Single animation controller for Material 3 entrance
+  late AnimationController _animationController;
+
+  /// * Material 3 fade animation
+  late Animation<double> _fadeAnimation;
+
+  /// * Material 3 slide animation
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeMaterial3Animations();
+    _setMaterial3StatusBar();
+    _startAnimations();
+  }
+
+  /// * Initialize Material 3 animations
+  void _initializeMaterial3Animations() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+  }
+
+  /// * Set Material 3 status bar
+  void _setMaterial3StatusBar() {
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: CropFreshColors.surface60Primary,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+  }
+
+  /// * Start Material 3 entrance animation
+  void _startAnimations() {
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenHeight = screenSize.height;
+    final isSmallScreen = screenHeight < 700;
+
     return Scaffold(
-      // * 60% BACKGROUND: Primary background color
-      backgroundColor: CropFreshColors.background60Primary,
-      
-      // * APP BAR: Material Design 3 style
-      appBar: AppBar(
-        title: const Text('CropFresh Dashboard'),
-        backgroundColor: CropFreshColors.background60Primary, // 60% background
-        foregroundColor: CropFreshColors.onBackground60,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Implement notifications
-            },
-            color: CropFreshColors.green30Primary, // 30% supporting color
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              // TODO: Implement profile
-            },
-            color: CropFreshColors.green30Primary, // 30% supporting color
-          ),
-        ],
-      ),
-      
-      // * BODY: Main content area
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // * WELCOME SECTION
-              _buildWelcomeSection(context),
-              
-              const SizedBox(height: 24),
-              
-              // * QUICK ACTIONS
-              _buildQuickActions(context),
-              
-              const SizedBox(height: 24),
-              
-              // * DASHBOARD CARDS
-              Expanded(
-                child: _buildDashboardCards(context),
+      backgroundColor: CropFreshColors.surface60Primary,
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 32.0,
+                    vertical: isSmallScreen ? 24.0 : 32.0,
+                  ),
+                  child: Column(
+                    children: [
+                      // * SPACER: Top breathing room
+                      Spacer(flex: isSmallScreen ? 2 : 3),
+
+                      // * LOGO SECTION: Brand identity
+                      _buildLogoSection(context, isSmallScreen),
+
+                      // * SPACER: Between logo and slogan
+                      SizedBox(height: isSmallScreen ? 48 : 64),
+
+                      // * SLOGAN SECTION: Simple messaging
+                      _buildSloganSection(context, isSmallScreen),
+
+                      // * SPACER: Flexible space
+                      Spacer(flex: isSmallScreen ? 3 : 4),
+
+                      // * BUTTON SECTION: Register and Login
+                      _buildButtonSection(context, isSmallScreen),
+
+                      // * SPACER: Bottom breathing room
+                      SizedBox(height: isSmallScreen ? 24 : 32),
+                    ],
+                  ),
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
-      
-      // * FLOATING ACTION BUTTON: Primary action
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // TODO: Implement add crop functionality
-        },
-        backgroundColor: CropFreshColors.orange10Primary, // 10% action color
-        foregroundColor: CropFreshColors.onOrange10,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Crop'),
-      ),
-      
-      // * BOTTOM NAVIGATION: Material Design 3 style
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: CropFreshColors.background60Primary, // 60% background
-        destinations: [
-          NavigationDestination(
-            icon: Icon(
-              Icons.dashboard_outlined,
-              color: CropFreshColors.green30Primary, // 30% supporting color
             ),
-            selectedIcon: Icon(
-              Icons.dashboard,
-              color: CropFreshColors.green30Primary, // 30% supporting color
-            ),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.agriculture_outlined,
-              color: CropFreshColors.onBackground60Secondary,
-            ),
-            selectedIcon: Icon(
-              Icons.agriculture,
-              color: CropFreshColors.green30Primary, // 30% supporting color
-            ),
-            label: 'Crops',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.analytics_outlined,
-              color: CropFreshColors.onBackground60Secondary,
-            ),
-            selectedIcon: Icon(
-              Icons.analytics,
-              color: CropFreshColors.green30Primary, // 30% supporting color
-            ),
-            label: 'Analytics',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.store_outlined,
-              color: CropFreshColors.onBackground60Secondary,
-            ),
-            selectedIcon: Icon(
-              Icons.store,
-              color: CropFreshColors.green30Primary, // 30% supporting color
-            ),
-            label: 'Market',
-          ),
-        ],
-        selectedIndex: 0,
-        onDestinationSelected: (index) {
-          // TODO: Implement navigation
+          );
         },
       ),
     );
   }
 
-  /// * Build welcome section
-  /// * Shows greeting and user status
-  Widget _buildWelcomeSection(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        // * 60% BACKGROUND: Card background
-        color: CropFreshColors.background60Card,
-        borderRadius: BorderRadius.circular(16), // Material 3 rounded corners
-        boxShadow: [
-          BoxShadow(
-                         color: CropFreshColors.green30Primary.withValues(alpha: 0.1), // 30% supporting shadow
-            blurRadius: 10,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Welcome back, Farmer! 👋',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: CropFreshColors.onBackground60,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Your crops are growing healthy. Check your dashboard for updates.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: CropFreshColors.onBackground60Secondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// * Build quick actions section
-  /// * Shows common farmer actions
-  Widget _buildQuickActions(BuildContext context) {
+  /// * Build logo section with Material 3 design
+  Widget _buildLogoSection(BuildContext context, bool isSmallScreen) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // * LOGO: Clean brand icon
+        Container(
+          width: isSmallScreen ? 96 : 120,
+          height: isSmallScreen ? 96 : 120,
+          decoration: BoxDecoration(
+            color: CropFreshColors.green30Container.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: isSmallScreen ? 64 : 80,
+              height: isSmallScreen ? 64 : 80,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  Icons.agriculture_outlined,
+                  size: isSmallScreen ? 48 : 60,
+                  color: CropFreshColors.green30Primary,
+                );
+              },
+            ),
+          ),
+        ),
+
+        SizedBox(height: isSmallScreen ? 24 : 32),
+
+        // * TEXT LOGO: App name in Material 3 style
         Text(
-          'Quick Actions',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          'CropFresh',
+          style: TextStyle(
+            fontSize: isSmallScreen ? 36 : 48,
+            fontWeight: FontWeight.w400,
             color: CropFreshColors.onBackground60,
-            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+            height: 1.0,
           ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionButton(
-                context,
-                'Weather',
-                Icons.wb_sunny_outlined,
-                CropFreshColors.waterBlue, // Weather color
-                onTap: () {
-                  // TODO: Implement weather
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                context,
-                'Market',
-                Icons.trending_up_outlined,
-                CropFreshColors.orange10Primary, // 10% action color
-                onTap: () {
-                  // TODO: Implement market
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                context,
-                'Tips',
-                Icons.lightbulb_outlined,
-                CropFreshColors.green30Primary, // 30% supporting color
-                onTap: () {
-                  // TODO: Implement tips
-                },
-              ),
-            ),
-          ],
         ),
       ],
     );
   }
 
-  /// * Build action button
-  /// * Reusable action button component
-  Widget _buildActionButton(
-    BuildContext context,
-    String label,
-    IconData icon,
-    Color color, {
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12), // Material 3 rounded corners
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: color,
-              size: 28,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// * Build dashboard cards
-  /// * Shows crop status and other information
-  Widget _buildDashboardCards(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
+  /// * Build slogan section with Material 3 typography
+  Widget _buildSloganSection(BuildContext context, bool isSmallScreen) {
+    return Column(
       children: [
-        _buildDashboardCard(
-          context,
-          'Active Crops',
-          '12',
-          Icons.agriculture,
-          CropFreshColors.green30Primary, // 30% supporting color
-        ),
-        _buildDashboardCard(
-          context,
-          'Harvest Ready',
-          '3',
-          Icons.eco,
-          CropFreshColors.cropHealthy, // Agricultural color
-        ),
-        _buildDashboardCard(
-          context,
-          'Total Revenue',
-          '₹25,000',
-          Icons.account_balance_wallet,
-          CropFreshColors.profit, // Financial color
-        ),
-        _buildDashboardCard(
-          context,
-          'Market Alerts',
-          '5',
-          Icons.notifications_active,
-          CropFreshColors.orange10Primary, // 10% action color
+        // * SLOGAN: Simple and focused message
+        Text(
+          'Smart farming for everyone',
+          style: TextStyle(
+            fontSize: isSmallScreen ? 18 : 22,
+            fontWeight: FontWeight.w400,
+            color: CropFreshColors.onBackground60Secondary,
+            letterSpacing: 0.1,
+            height: 1.4,
+          ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  /// * Build dashboard card
-  /// * Reusable card component for dashboard metrics
-  Widget _buildDashboardCard(
-    BuildContext context,
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        // * 60% BACKGROUND: Card background
-        color: CropFreshColors.background60Card,
-        borderRadius: BorderRadius.circular(16), // Material 3 rounded corners
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.1),
-            blurRadius: 8,
-            spreadRadius: 1,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(
-                icon,
-                color: color,
-                size: 24,
+  /// * Build button section with Material 3 buttons
+  Widget _buildButtonSection(BuildContext context, bool isSmallScreen) {
+    return Column(
+      children: [
+        // * REGISTER BUTTON: Primary Material 3 filled button
+        SizedBox(
+          width: double.infinity,
+          height: isSmallScreen ? 48 : 56,
+          child: FilledButton(
+            onPressed: () => _handleRegister(context),
+            style: FilledButton.styleFrom(
+              backgroundColor: CropFreshColors.green30Primary,
+              foregroundColor: CropFreshColors.onGreen30,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
               ),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(
-                  Icons.arrow_upward,
-                  color: color,
-                  size: 16,
-                ),
+            ),
+            child: Text(
+              'Register',
+              style: TextStyle(
+                fontSize: isSmallScreen ? 14 : 16,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.1,
               ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: CropFreshColors.onBackground60Secondary,
+        ),
+
+        SizedBox(height: isSmallScreen ? 12 : 16),
+
+        // * LOGIN BUTTON: Secondary Material 3 outlined button
+        SizedBox(
+          width: double.infinity,
+          height: isSmallScreen ? 48 : 56,
+          child: OutlinedButton(
+            onPressed: () => _handleLogin(context),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: CropFreshColors.green30Primary,
+              side: BorderSide(color: CropFreshColors.green30Primary, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Text(
+              'Login',
+              style: TextStyle(
+                fontSize: isSmallScreen ? 14 : 16,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.1,
+              ),
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  /// * Handle register button press with Material 3 feedback
+  void _handleRegister(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const RegistrationFlow()));
+  }
+
+  /// * Handle login button press with Material 3 feedback
+  void _handleLogin(BuildContext context) {
+    HapticFeedback.lightImpact();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Login feature coming soon!',
+          style: TextStyle(
+            color: CropFreshColors.onGreen30,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        backgroundColor: CropFreshColors.green30Primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: EdgeInsets.all(16),
+        duration: Duration(seconds: 2),
       ),
     );
   }
-} 
+}

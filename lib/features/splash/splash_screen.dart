@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/colors.dart';
 
-/// * CROPFRESH MODERN SPLASH SCREEN
-/// * Material Design 3 with glassmorphism and advanced micro-interactions
-/// * Optimized performance with component-based architecture
-/// * Features: Glassmorphism, mesh gradients, advanced particles, ripple effects
+/// * CROPFRESH IMPROVED ANDROID SPLASH SCREEN
+/// * Optimized for Android devices with Material Design 3 principles
+/// * Features: Clean animations, proper scaling, performance optimized
+/// * Android-first design with responsive layout and smooth transitions
 class CropFreshSplashScreen extends StatefulWidget {
   /// * Navigation callback when splash completes
   final VoidCallback? onSplashComplete;
@@ -25,52 +25,36 @@ class _CropFreshSplashScreenState extends State<CropFreshSplashScreen>
   // * ANIMATION CONTROLLERS
   // ============================================================================
   
-  /// * Master controller for entire splash sequence
-  late AnimationController _masterController;
+  /// * Primary animation controller for the entire splash sequence
+  late AnimationController _primaryController;
   
-  /// * Logo animation controller
+  /// * Logo animation controller with optimized timing
   late AnimationController _logoController;
   
-  /// * Background effects controller
-  late AnimationController _backgroundController;
-  
-  /// * Content reveal controller
-  late AnimationController _contentController;
-  
-  /// * Exit transition controller
-  late AnimationController _exitController;
+  /// * Text animation controller for brand text
+  late AnimationController _textController;
 
   // ============================================================================
-  // * CORE ANIMATIONS
+  // * OPTIMIZED ANIMATIONS
   // ============================================================================
   
-  /// * Logo animations
+  /// * Logo animations with smooth curves
   late Animation<double> _logoScaleAnimation;
   late Animation<double> _logoFadeAnimation;
   late Animation<double> _logoRotationAnimation;
-  late Animation<double> _logoPulseAnimation;
+  
+  /// * Brand text animations
+  late Animation<double> _textFadeAnimation;
+  late Animation<Offset> _textSlideAnimation;
   
   /// * Background gradient animation
   late Animation<double> _backgroundAnimation;
   
-  /// * Content fade and scale animation
-  late Animation<double> _contentFadeAnimation;
-  late Animation<double> _contentScaleAnimation;
-  
-  /// * Brand text animations
-  late Animation<double> _brandTextFadeAnimation;
-  late Animation<Offset> _brandTextSlideAnimation;
-  
-  /// * Metadata animations
-  late Animation<double> _metadataFadeAnimation;
-  late Animation<Offset> _metadataSlideAnimation;
-  
-  /// * Exit transition animations
+  /// * Exit transition animation
   late Animation<double> _exitFadeAnimation;
-  late Animation<double> _exitScaleAnimation;
 
-  /// * Particle animation
-  late Animation<double> _particleAnimation;
+  /// * Progress indicator animation
+  late Animation<double> _progressAnimation;
 
   @override
   void initState() {
@@ -80,72 +64,72 @@ class _CropFreshSplashScreenState extends State<CropFreshSplashScreen>
     _startSplashSequence();
   }
 
-  /// * Initialize animation controllers with optimized timing
+  /// * Initialize animation controllers with Android-optimized timing
   void _initializeControllers() {
-    // * Master sequence controller (6 seconds total)
-    _masterController = AnimationController(
-      duration: const Duration(milliseconds: 6000),
+    // * Primary controller for main sequence (4 seconds total)
+    _primaryController = AnimationController(
+      duration: const Duration(milliseconds: 4000),
       vsync: this,
     );
     
-    // * Logo controller (3 seconds)
+    // * Logo animation controller (2.5 seconds)
     _logoController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 2500),
       vsync: this,
     );
     
-    // * Background effects (continuous)
-    _backgroundController = AnimationController(
-      duration: const Duration(milliseconds: 8000),
-      vsync: this,
-    );
-    
-    // * Content animation (3 seconds)
-    _contentController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
-      vsync: this,
-    );
-    
-    // * Exit transition (1 second)
-    _exitController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+    // * Text animation controller (2 seconds, starts after logo)
+    _textController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
   }
 
-  /// * Initialize all animations with smooth curves
+  /// * Initialize animations with optimized curves for Android
   void _initializeAnimations() {
-    // * Logo animations
+    // * Logo scale animation with bounce effect
     _logoScaleAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _logoController,
-      curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+      curve: const Interval(0.0, 0.7, curve: Curves.elasticOut),
     ));
 
+    // * Logo fade animation
     _logoFadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _logoController,
-      curve: const Interval(0.0, 0.4, curve: Curves.easeInOut),
+      curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
     ));
 
+    // * Logo rotation animation
     _logoRotationAnimation = Tween<double>(
-      begin: -0.2,
+      begin: -0.1,
       end: 0.0,
     ).animate(CurvedAnimation(
       parent: _logoController,
-      curve: const Interval(0.1, 0.7, curve: Curves.easeOutBack),
+      curve: const Interval(0.2, 0.8, curve: Curves.easeOutBack),
     ));
 
-    _logoPulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
+    // * Text fade animation
+    _textFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _logoController,
-      curve: const Interval(0.6, 1.0, curve: Curves.easeInOut),
+      parent: _textController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeInOut),
+    ));
+
+    // * Text slide animation
+    _textSlideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _textController,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
     ));
 
     // * Background animation
@@ -153,176 +137,133 @@ class _CropFreshSplashScreenState extends State<CropFreshSplashScreen>
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _backgroundController,
+      parent: _primaryController,
       curve: Curves.easeInOut,
     ));
 
-    // * Content animations
-    _contentFadeAnimation = Tween<double>(
+    // * Progress animation
+    _progressAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _contentController,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeOutCubic),
+      parent: _primaryController,
+      curve: const Interval(0.6, 1.0, curve: Curves.easeInOut),
     ));
 
-    _contentScaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _contentController,
-      curve: const Interval(0.0, 0.9, curve: Curves.elasticOut),
-    ));
-
-    // * Brand text animations
-    _brandTextFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _contentController,
-      curve: const Interval(0.3, 0.8, curve: Curves.easeInOut),
-    ));
-
-    _brandTextSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _contentController,
-      curve: const Interval(0.3, 0.9, curve: Curves.easeOutCubic),
-    ));
-
-    // * Metadata animations
-    _metadataFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _contentController,
-      curve: const Interval(0.5, 1.0, curve: Curves.easeInOut),
-    ));
-
-    _metadataSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _contentController,
-      curve: const Interval(0.5, 1.0, curve: Curves.easeOutBack),
-    ));
-
-    // * Exit animations
+    // * Exit fade animation
     _exitFadeAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
     ).animate(CurvedAnimation(
-      parent: _exitController,
-      curve: Curves.easeInCubic,
-    ));
-
-    _exitScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _exitController,
-      curve: Curves.easeInOut,
-    ));
-
-    // * Particle animation
-    _particleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _backgroundController,
-      curve: Curves.linear,
+      parent: _primaryController,
+      curve: const Interval(0.9, 1.0, curve: Curves.easeInOut),
     ));
   }
 
-  /// * Start the optimized splash sequence
-  void _startSplashSequence() {
-    // ! SECURITY: Immersive experience
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    
-    // * Start background effects immediately
-    _backgroundController.repeat();
-    
-    // * Logo appears after brief delay
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        _logoController.forward();
-      }
-    });
-    
-    // * Content appears after logo
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        _contentController.forward();
-      }
-    });
-    
-    // * Start master timer
-    _masterController.forward();
-    
-    // * Exit sequence
-    Future.delayed(const Duration(milliseconds: 5000), () {
-      if (mounted) _exitController.forward();
-    });
-    
-    // * Complete splash
-    Future.delayed(const Duration(milliseconds: 6000), () {
-      if (mounted) _completeSplash();
-    });
+  /// * Start the splash animation sequence
+  void _startSplashSequence() async {
+    try {
+      // ! ANDROID OPTIMIZATION: Set status bar for splash
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ));
+
+      // * Start primary controller
+      _primaryController.forward();
+      
+      // * Start logo animation
+      _logoController.forward();
+      
+      // * Wait for logo animation to progress, then start text
+      await Future.delayed(const Duration(milliseconds: 800));
+      _textController.forward();
+      
+      // * Wait for all animations to complete
+      await _primaryController.forward().orCancel;
+      
+      // * Complete splash sequence
+      _completeSplash();
+      
+    } catch (error) {
+      // ! ERROR HANDLING: Handle animation errors gracefully
+      debugPrint('Splash animation error: $error');
+      _completeSplash();
+    }
   }
 
-  /// * Complete splash and navigate
+  /// * Complete splash and navigate to main app
   void _completeSplash() {
-    // ! RESTORE: System UI
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-      overlays: SystemUiOverlay.values,
-    );
-    
-    if (widget.onSplashComplete != null) {
+    if (mounted && widget.onSplashComplete != null) {
       widget.onSplashComplete!();
     }
   }
 
   @override
   void dispose() {
-    _masterController.dispose();
+    _primaryController.dispose();
     _logoController.dispose();
-    _backgroundController.dispose();
-    _contentController.dispose();
-    _exitController.dispose();
+    _textController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
-    final bool isLargeScreen = screenSize.width > 600;
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.height < 600;
     
     return Scaffold(
-      backgroundColor: CropFreshColors.background60Primary,
+      backgroundColor: CropFreshColors.green30Primary,
       body: AnimatedBuilder(
-        animation: Listenable.merge([
-          _exitController,
-          _backgroundController,
-        ]),
+        animation: _primaryController,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _exitScaleAnimation.value,
-            child: Opacity(
-              opacity: _exitFadeAnimation.value,
-              child: Stack(
+          return Container(
+            // * ANDROID-OPTIMIZED GRADIENT BACKGROUND
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  CropFreshColors.green30Primary,
+                  CropFreshColors.green30Dark,
+                  CropFreshColors.green30Primary.withValues(alpha: 0.9),
+                ],
+                stops: [
+                  0.0,
+                  0.5 + (_backgroundAnimation.value * 0.3),
+                  1.0,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // * MODERN GRADIENT BACKGROUND
-                  _buildModernBackground(),
+                  // * TOP SPACER: Responsive spacing
+                  SizedBox(height: isSmallScreen ? 60 : 80),
                   
-                  // * PARTICLE BACKGROUND
-                  _buildParticleBackground(),
-                  
-                  // * MAIN CONTENT
-                  SafeArea(
-                    child: _buildMainContent(isLargeScreen),
+                  // * LOGO SECTION: Main brand logo
+                  Expanded(
+                    flex: 3,
+                    child: _buildLogoSection(context, isSmallScreen),
                   ),
+                  
+                  // * BRAND TEXT SECTION: App name and tagline
+                  Expanded(
+                    flex: 2,
+                    child: _buildBrandTextSection(context, isSmallScreen),
+                  ),
+                  
+                  // * PROGRESS SECTION: Loading indicator
+                  Expanded(
+                    flex: 1,
+                    child: _buildProgressSection(context, isSmallScreen),
+                  ),
+                  
+                  // * BOTTOM SPACER: Footer spacing
+                  SizedBox(height: isSmallScreen ? 40 : 60),
                 ],
               ),
             ),
@@ -332,154 +273,61 @@ class _CropFreshSplashScreenState extends State<CropFreshSplashScreen>
     );
   }
 
-  /// * Build modern gradient background with mesh effect
-  Widget _buildModernBackground() {
+  /// * Build animated logo section
+  Widget _buildLogoSection(BuildContext context, bool isSmallScreen) {
     return AnimatedBuilder(
-      animation: _backgroundAnimation,
+      animation: _logoController,
       builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.topLeft,
-              radius: 1.5 + (_backgroundAnimation.value * 0.5),
-              colors: [
-                CropFreshColors.green30Primary.withValues(alpha: 0.15),
-                CropFreshColors.background60Primary,
-                CropFreshColors.green30Container.withValues(alpha: 0.08),
-                CropFreshColors.orange10Container.withValues(alpha: 0.05),
-              ],
-              stops: const [0.0, 0.4, 0.7, 1.0],
-            ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [
-                  Colors.transparent,
-                  CropFreshColors.green30Primary.withValues(alpha: 0.03),
-                  Colors.transparent,
-                ],
-                transform: GradientRotation(_backgroundAnimation.value * 6.28),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// * Build particle background effect
-  Widget _buildParticleBackground() {
-    return AnimatedBuilder(
-      animation: _particleAnimation,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: ParticleBackgroundPainter(
-            animation: _particleAnimation,
-            primaryColor: CropFreshColors.green30Primary.withValues(alpha: 0.1),
-            secondaryColor: CropFreshColors.orange10Primary.withValues(alpha: 0.08),
-          ),
-          size: Size.infinite,
-        );
-      },
-    );
-  }
-
-  /// * Build main content with glassmorphic effects
-  Widget _buildMainContent(bool isLargeScreen) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([
-        _contentFadeAnimation,
-        _contentScaleAnimation,
-      ]),
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _contentScaleAnimation.value,
-          child: Opacity(
-            opacity: _contentFadeAnimation.value,
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
-                
-                // * LOGO SECTION
-                Expanded(
-                  flex: 6,
-                  child: Center(
-                    child: _buildLogoSection(isLargeScreen),
-                  ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // * BRAND TEXT SECTION
-                Expanded(
-                  flex: 4,
-                  child: _buildBrandTextSection(isLargeScreen),
-                ),
-                
-                // * METADATA SECTION
-                Expanded(
-                  flex: 4,
-                  child: _buildMetadataSection(isLargeScreen),
-                ),
-                
-                const Spacer(flex: 2),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// * Build glassmorphic logo container
-  Widget _buildLogoSection(bool isLargeScreen) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([
-        _logoScaleAnimation,
-        _logoFadeAnimation,
-        _logoRotationAnimation,
-        _logoPulseAnimation,
-      ]),
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _logoScaleAnimation.value * _logoPulseAnimation.value,
+        return Center(
           child: Transform.rotate(
             angle: _logoRotationAnimation.value,
-            child: Opacity(
-              opacity: _logoFadeAnimation.value,
-              child: Container(
-                width: isLargeScreen ? 280 : 220,
-                height: isLargeScreen ? 280 : 220,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(45),
-                  color: Colors.white.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1.5,
+            child: Transform.scale(
+              scale: _logoScaleAnimation.value,
+              child: Opacity(
+                opacity: _logoFadeAnimation.value,
+                child: Container(
+                  width: isSmallScreen ? 120 : 150,
+                  height: isSmallScreen ? 120 : 150,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: CropFreshColors.green30Primary.withValues(alpha: 0.25),
-                      blurRadius: 30,
-                      spreadRadius: 10,
-                      offset: const Offset(0, 10),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(75),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: isSmallScreen ? 80 : 100,
+                      height: isSmallScreen ? 80 : 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.3),
+                                Colors.white.withValues(alpha: 0.1),
+                              ],
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.agriculture_outlined,
+                            size: isSmallScreen ? 60 : 80,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
                     ),
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      blurRadius: 20,
-                      spreadRadius: -5,
-                      offset: const Offset(0, -5),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(45),
-                  child: Container(
-                    padding: const EdgeInsets.all(40),
-                    child: _buildLogoWidget(isLargeScreen),
                   ),
                 ),
               ),
@@ -490,259 +338,117 @@ class _CropFreshSplashScreenState extends State<CropFreshSplashScreen>
     );
   }
 
-  /// * Build logo widget with fallback
-  Widget _buildLogoWidget(bool isLargeScreen) {
-    return Image.asset(
-      'assets/images/logo.png',
-      width: isLargeScreen ? 200 : 140,
-      height: isLargeScreen ? 200 : 140,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          width: isLargeScreen ? 200 : 140,
-          height: isLargeScreen ? 200 : 140,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                CropFreshColors.green30Primary,
-                CropFreshColors.green30Dark,
+  /// * Build animated brand text section
+  Widget _buildBrandTextSection(BuildContext context, bool isSmallScreen) {
+    return AnimatedBuilder(
+      animation: _textController,
+      builder: (context, child) {
+        return SlideTransition(
+          position: _textSlideAnimation,
+          child: FadeTransition(
+            opacity: _textFadeAnimation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // * MAIN BRAND NAME
+                Text(
+                  'CropFresh',
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 32 : 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 2.0,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                SizedBox(height: isSmallScreen ? 8 : 12),
+                
+                // * TAGLINE
+                Text(
+                  'Empowering Farmers',
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 16 : 18,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white.withValues(alpha: 0.9),
+                    letterSpacing: 1.0,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 5,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Icon(
-            Icons.agriculture,
-            size: isLargeScreen ? 100 : 80,
-            color: Colors.white,
           ),
         );
       },
     );
   }
 
-  /// * Build brand text section
-  Widget _buildBrandTextSection(bool isLargeScreen) {
+  /// * Build progress indicator section
+  Widget _buildProgressSection(BuildContext context, bool isSmallScreen) {
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        _brandTextFadeAnimation,
-        _brandTextSlideAnimation,
-      ]),
+      animation: _progressAnimation,
       builder: (context, child) {
-        return SlideTransition(
-          position: _brandTextSlideAnimation,
-          child: Opacity(
-            opacity: _brandTextFadeAnimation.value,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // * BRAND LOGO TEXT
-                _buildBrandText(isLargeScreen),
-                
-                const SizedBox(height: 16),
-                
-                // * ANIMATED UNDERLINE
-                Container(
-                  height: 3,
-                  width: (isLargeScreen ? 150 : 100) * _brandTextFadeAnimation.value,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        CropFreshColors.orange10Primary,
-                        CropFreshColors.green30Primary,
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            // * PROGRESS BAR
+            Container(
+              width: 200,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 200 * _progressAnimation.value,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(2),
                   ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// * Build brand text with fallback
-  Widget _buildBrandText(bool isLargeScreen) {
-    return Image.asset(
-      'assets/images/logo-text.png',
-      height: isLargeScreen ? 80 : 60,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) {
-        return ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
-            colors: [
-              CropFreshColors.green30Primary,
-              CropFreshColors.green30Dark,
-            ],
-          ).createShader(bounds),
-          child: Text(
-            'CropFresh',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: isLargeScreen ? 48 : 36,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 2.0,
-              shadows: [
-                Shadow(
-                  color: CropFreshColors.green30Primary.withValues(alpha: 0.3),
-                  offset: const Offset(0, 4),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        );
-      },
-    );
-  }
-
-  /// * Build metadata section
-  Widget _buildMetadataSection(bool isLargeScreen) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([
-        _metadataFadeAnimation,
-        _metadataSlideAnimation,
-      ]),
-      builder: (context, child) {
-        return SlideTransition(
-          position: _metadataSlideAnimation,
-          child: Opacity(
-            opacity: _metadataFadeAnimation.value,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // * MAIN TAGLINE
-                Text(
-                  'Empowering Farmers with Technology',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: CropFreshColors.onBackground60,
-                    fontSize: isLargeScreen ? 24 : 20,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.8,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // * BRAND VALUES
-                Text(
-                  'Sustainable • Innovative • Reliable',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: CropFreshColors.onBackground60Secondary,
-                    fontSize: isLargeScreen ? 18 : 16,
-                    letterSpacing: 1.5,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // * LOADING INDICATOR
-                _buildLoadingIndicator(),
-                
-                const SizedBox(height: 32),
-                
-                // * VERSION INFO
-                _buildVersionInfo(),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// * Build loading indicator
-  Widget _buildLoadingIndicator() {
-    return Column(
-      children: [
-        SizedBox(
-          width: 60,
-          height: 60,
-          child: Stack(
-            children: [
-              CircularProgressIndicator(
-                strokeWidth: 4,
-                value: 1.0,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  CropFreshColors.green30Container.withValues(alpha: 0.3),
-                ),
-                backgroundColor: Colors.transparent,
+                ],
               ),
-              CircularProgressIndicator(
-                strokeWidth: 4,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  CropFreshColors.orange10Primary,
+            ),
+            
+            SizedBox(height: isSmallScreen ? 16 : 20),
+            
+            // * LOADING TEXT
+            FadeTransition(
+              opacity: _progressAnimation,
+              child: Text(
+                'Loading...',
+                style: TextStyle(
+                  fontSize: isSmallScreen ? 14 : 16,
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w300,
                 ),
-                backgroundColor: Colors.transparent,
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'Loading...',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: CropFreshColors.onBackground60Secondary,
-            fontSize: 14,
-            letterSpacing: 1.2,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// * Build version information
-  Widget _buildVersionInfo() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                CropFreshColors.green30Container.withValues(alpha: 0.2),
-                CropFreshColors.green30Container.withValues(alpha: 0.1),
-              ],
             ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: CropFreshColors.green30Primary.withValues(alpha: 0.3),
-              width: 1,
-            ),
-          ),
-          child: Text(
-            'Version 1.0.0',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: CropFreshColors.green30Primary,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          '© 2024 CropFresh Technologies',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: CropFreshColors.onBackground60Tertiary,
-            fontSize: 10,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Made with ❤️ for Farmers',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: CropFreshColors.onBackground60Tertiary,
-            fontSize: 9,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
