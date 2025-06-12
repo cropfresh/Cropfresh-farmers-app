@@ -20,6 +20,13 @@ class FarmDetails {
   final String address;
   final String? manualAddress;
 
+  // * Detailed manual address fields
+  final String? village;
+  final String? tehsil;
+  final String? district;
+  final String? addressState;
+  final String? pincode;
+
   // * Land information
   final double landArea;
   final String landAreaUnit; // 'hectares' or 'acres'
@@ -46,6 +53,11 @@ class FarmDetails {
     required this.longitude,
     required this.address,
     this.manualAddress,
+    this.village,
+    this.tehsil,
+    this.district,
+    this.addressState,
+    this.pincode,
     required this.landArea,
     required this.landAreaUnit,
     required this.ownershipType,
@@ -68,6 +80,11 @@ class FarmDetails {
       longitude: (json['longitude'] as num).toDouble(),
       address: json['address'] as String,
       manualAddress: json['manualAddress'] as String?,
+      village: json['village'] as String?,
+      tehsil: json['tehsil'] as String?,
+      district: json['district'] as String?,
+      addressState: json['addressState'] as String?,
+      pincode: json['pincode'] as String?,
       landArea: (json['landArea'] as num).toDouble(),
       landAreaUnit: json['landAreaUnit'] as String,
       ownershipType: json['ownershipType'] as String,
@@ -95,6 +112,11 @@ class FarmDetails {
       'longitude': longitude,
       'address': address,
       'manualAddress': manualAddress,
+      'village': village,
+      'tehsil': tehsil,
+      'district': district,
+      'addressState': addressState,
+      'pincode': pincode,
       'landArea': landArea,
       'landAreaUnit': landAreaUnit,
       'ownershipType': ownershipType,
@@ -117,6 +139,11 @@ class FarmDetails {
     double? longitude,
     String? address,
     String? manualAddress,
+    String? village,
+    String? tehsil,
+    String? district,
+    String? addressState,
+    String? pincode,
     double? landArea,
     String? landAreaUnit,
     String? ownershipType,
@@ -136,6 +163,11 @@ class FarmDetails {
       longitude: longitude ?? this.longitude,
       address: address ?? this.address,
       manualAddress: manualAddress ?? this.manualAddress,
+      village: village ?? this.village,
+      tehsil: tehsil ?? this.tehsil,
+      district: district ?? this.district,
+      addressState: addressState ?? this.addressState,
+      pincode: pincode ?? this.pincode,
       landArea: landArea ?? this.landArea,
       landAreaUnit: landAreaUnit ?? this.landAreaUnit,
       ownershipType: ownershipType ?? this.ownershipType,

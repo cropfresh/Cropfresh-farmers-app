@@ -130,13 +130,53 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
               children: [
                 Icon(Icons.person, size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
-                Text('Farmer ID: ${widget.farmerId}'),
+                Expanded(child: Text('Farmer ID: ${_controller.farmerId}')),
                 const SizedBox(width: 16),
                 Icon(Icons.star, size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
                 Text('Level: ${widget.experienceLevel}'),
               ],
             ),
+            if (_controller.farmerId != widget.farmerId) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome,
+                      color: Colors.blue.shade700,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Farmer ID auto-generated based on your location',
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _controller.generateFarmerId(),
+                      icon: Icon(
+                        Icons.refresh,
+                        color: Colors.blue.shade700,
+                        size: 16,
+                      ),
+                      tooltip: 'Regenerate Farmer ID',
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -232,17 +272,21 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
 
             // * MANUAL ADDRESS INPUT
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _manualAddressController,
-              decoration: const InputDecoration(
-                labelText: 'Manual Address (Optional)',
-                hintText: 'Enter address if GPS is not accurate',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.edit_location),
-              ),
-              maxLines: 2,
-              onChanged: _controller.updateManualAddress,
+            Text(
+              'Manual Address (Optional)',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Enter detailed address if GPS location is not accurate',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 12),
+            _buildDetailedAddressForm(),
           ],
         ),
       ),
@@ -689,6 +733,127 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDetailedAddressForm() {
+    return Column(
+      children: [
+        // * VILLAGE/AREA
+        TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Village/Area',
+            hintText: 'Enter village or area name',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.home),
+          ),
+          onChanged: (value) =>
+              _controller.updateAddressField('village', value),
+        ),
+        const SizedBox(height: 12),
+
+        // * TEHSIL/TALUK AND DISTRICT
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Tehsil/Taluk',
+                  hintText: 'Enter tehsil/taluk',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.location_city),
+                ),
+                onChanged: (value) =>
+                    _controller.updateAddressField('tehsil', value),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'District',
+                  hintText: 'Enter district',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.domain),
+                ),
+                onChanged: (value) =>
+                    _controller.updateAddressField('district', value),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // * STATE AND PINCODE
+        Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'State',
+                  hintText: 'Enter state name',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.map),
+                ),
+                onChanged: (value) =>
+                    _controller.updateAddressField('state', value),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Pincode',
+                  hintText: '000000',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.pin_drop),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                onChanged: (value) =>
+                    _controller.updateAddressField('pincode', value),
+              ),
+            ),
+          ],
+        ),
+
+        // * DISPLAY FORMATTED ADDRESS
+        if (_controller.hasManualAddress) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.preview, color: Colors.blue.shade700, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Address Preview:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _controller.formattedManualAddress,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 

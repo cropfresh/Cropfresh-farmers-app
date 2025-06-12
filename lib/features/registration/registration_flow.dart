@@ -280,9 +280,36 @@ class _RegistrationFlowState extends State<RegistrationFlow> {
             onChanged: (value) => _fullName = value,
           ),
           const SizedBox(height: 16),
-          TextField(
-            decoration: const InputDecoration(labelText: 'Farmer ID'),
-            onChanged: (value) => _farmerId = value,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.info, color: Colors.green.shade700, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Farmer ID will be auto-generated',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Your unique Farmer ID will be automatically created based on your farm location and registration details.',
+                  style: TextStyle(fontSize: 12, color: Colors.green.shade600),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(

@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'models/farm_details.dart';
 import 'models/crop.dart';
 import 'farm_details_repository.dart';
+import 'services/farmer_id_generator.dart';
 
 /// * FARM DETAILS FORM STATE
 /// * Represents the current state of the farm details form
@@ -44,6 +45,13 @@ class FarmDetailsController extends ChangeNotifier {
   String _address = '';
   String _manualAddress = '';
   bool _isLocationLoading = false;
+
+  // * DETAILED MANUAL ADDRESS FIELDS
+  String _village = '';
+  String _tehsil = '';
+  String _district = '';
+  String _addressState = '';
+  String _pincode = '';
 
   // * LAND INFORMATION
   double _landArea = 0.0;
@@ -89,6 +97,24 @@ class FarmDetailsController extends ChangeNotifier {
 
   bool get hasLocation => _latitude != null && _longitude != null;
 
+  bool get hasManualAddress {
+    return _village.isNotEmpty ||
+        _tehsil.isNotEmpty ||
+        _district.isNotEmpty ||
+        _addressState.isNotEmpty ||
+        _pincode.isNotEmpty;
+  }
+
+  String get formattedManualAddress {
+    final parts = <String>[];
+    if (_village.isNotEmpty) parts.add(_village);
+    if (_tehsil.isNotEmpty) parts.add(_tehsil);
+    if (_district.isNotEmpty) parts.add(_district);
+    if (_addressState.isNotEmpty) parts.add(_addressState);
+    if (_pincode.isNotEmpty) parts.add(_pincode);
+    return parts.join(', ');
+  }
+
   String get landAreaReference {
     if (_landArea > 0) {
       return _repository.getLandAreaReference(_landArea, _landAreaUnit);
@@ -126,6 +152,46 @@ class FarmDetailsController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// * AUTO-GENERATE FARMER ID
+  /// * Generates ID based on location data or GPS coordinates
+  void generateFarmerId() {
+    String generatedId;
+
+    if (_addressState.isNotEmpty &&
+        _district.isNotEmpty &&
+        _tehsil.isNotEmpty) {
+      // * Use location-based generation
+      generatedId = FarmerIdGenerator.generateFarmerId(
+        state: _addressState,
+        district: _district,
+        tehsil: _tehsil,
+        village: _village.isNotEmpty ? _village : null,
+        phoneNumber: _phoneNumber,
+        registrationDate: DateTime.now(),
+      );
+    } else if (_latitude != null && _longitude != null) {
+      // * Use GPS-based generation
+      generatedId = FarmerIdGenerator.generateGpsBasedFarmerId(
+        latitude: _latitude!,
+        longitude: _longitude!,
+        phoneNumber: _phoneNumber,
+        registrationDate: DateTime.now(),
+      );
+    } else {
+      // * Fallback: Use phone number and timestamp
+      final now = DateTime.now();
+      final yearMonth = '${now.year}${now.month.toString().padLeft(2, '0')}';
+      final sequence = (_phoneNumber.hashCode % 10000).toString().padLeft(
+        4,
+        '0',
+      );
+      generatedId = 'CF-GEN-TMP-$yearMonth-$sequence';
+    }
+
+    _farmerId = generatedId;
+    notifyListeners();
+  }
+
   /// * UPDATE LOCATION DATA
   void updateLocation({
     required double latitude,
@@ -136,12 +202,51 @@ class FarmDetailsController extends ChangeNotifier {
     _longitude = longitude;
     _address = address;
     _clearError();
+
+    // * Auto-generate farmer ID based on GPS if no manual address
+    if (!hasManualAddress) {
+      generateFarmerId();
+    }
+
     notifyListeners();
   }
 
   /// * UPDATE MANUAL ADDRESS
   void updateManualAddress(String address) {
     _manualAddress = address;
+    notifyListeners();
+  }
+
+  /// * UPDATE INDIVIDUAL ADDRESS FIELD
+  void updateAddressField(String field, String value) {
+    switch (field) {
+      case 'village':
+        _village = value;
+        break;
+      case 'tehsil':
+        _tehsil = value;
+        break;
+      case 'district':
+        _district = value;
+        break;
+      case 'state':
+        _addressState = value;
+        break;
+      case 'pincode':
+        _pincode = value;
+        break;
+    }
+
+    // * Update the combined manual address
+    _manualAddress = formattedManualAddress;
+
+    // * Auto-generate farmer ID if we have enough location data
+    if (_addressState.isNotEmpty &&
+        _district.isNotEmpty &&
+        _tehsil.isNotEmpty) {
+      generateFarmerId();
+    }
+
     notifyListeners();
   }
 
@@ -264,6 +369,11 @@ class FarmDetailsController extends ChangeNotifier {
         longitude: _longitude!,
         address: _address,
         manualAddress: _manualAddress.isNotEmpty ? _manualAddress : null,
+        village: _village.isNotEmpty ? _village : null,
+        tehsil: _tehsil.isNotEmpty ? _tehsil : null,
+        district: _district.isNotEmpty ? _district : null,
+        addressState: _addressState.isNotEmpty ? _addressState : null,
+        pincode: _pincode.isNotEmpty ? _pincode : null,
         landArea: _landArea,
         landAreaUnit: _landAreaUnit,
         ownershipType: _ownershipType,
@@ -302,6 +412,11 @@ class FarmDetailsController extends ChangeNotifier {
     _longitude = null;
     _address = '';
     _manualAddress = '';
+    _village = '';
+    _tehsil = '';
+    _district = '';
+    _addressState = '';
+    _pincode = '';
     _landArea = 0.0;
     _landAreaUnit = 'hectares';
     _ownershipType = '';
