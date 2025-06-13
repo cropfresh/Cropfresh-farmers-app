@@ -204,7 +204,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                   Text(
                     'Good ${_getGreeting()}! 👋',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                      color: colorScheme.onSurface.withOpacity(0.8),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -222,7 +222,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                         Icon(
                           Icons.sync,
                           size: 16,
-                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                          color: colorScheme.onSurface.withOpacity(0.6),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -369,8 +369,8 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                     ),
                     decoration: BoxDecoration(
                       color: isPositive
-                          ? Colors.green.withValues(alpha: 0.2)
-                          : Colors.red.withValues(alpha: 0.2),
+                          ? Colors.green.withOpacity(0.2)
+                          : Colors.red.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -405,7 +405,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                 title,
                 style: TextStyle(
                   fontSize: 11,
-                  color: textColor.withValues(alpha: 0.8),
+                  color: textColor.withOpacity(0.8),
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
@@ -506,7 +506,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                     Text(
                       weather.current.condition,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.8),
+                        color: colorScheme.onSurface.withOpacity(0.8),
                       ),
                     ),
                     if (weather.current.hasAlert)
@@ -633,7 +633,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                 label,
                 style: TextStyle(
                   fontSize: 9,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                  color: colorScheme.onSurfaceVariant.withOpacity(0.8),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -664,7 +664,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface.withValues(alpha: 0.8),
+              color: colorScheme.onSurface.withOpacity(0.8),
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -684,7 +684,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
             '${forecast.minTemp.toInt()}°',
             style: TextStyle(
               fontSize: 10,
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              color: colorScheme.onSurface.withOpacity(0.6),
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -813,9 +813,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getTrendColor(
-                              price.trend,
-                            ).withValues(alpha: 0.2),
+                            color: _getTrendColor(price.trend).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -923,7 +921,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
               contentPadding: const EdgeInsets.all(16),
               tileColor: notification.isRead
                   ? colorScheme.surfaceContainerLow
-                  : colorScheme.primaryContainer.withValues(alpha: 0.1),
+                  : colorScheme.primaryContainer.withOpacity(0.1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -932,7 +930,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                 decoration: BoxDecoration(
                   color: _getPriorityColor(
                     notification.priority,
-                  ).withValues(alpha: 0.2),
+                  ).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -958,7 +956,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
               trailing: Text(
                 _formatNotificationTime(notification.timestamp),
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
               onTap: () => _markNotificationAsRead(notification.id),
@@ -987,20 +985,20 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
           Icon(
             Icons.notifications_none_outlined,
             size: 48,
-            color: colorScheme.onSurface.withValues(alpha: 0.5),
+            color: colorScheme.onSurface.withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'No new notifications',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
+              color: colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'You\'re all caught up!',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
+              color: colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
         ],
@@ -1073,8 +1071,8 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      colorScheme.primaryContainer.withValues(alpha: 0.3),
-                      colorScheme.primaryContainer.withValues(alpha: 0.1),
+                      colorScheme.primaryContainer.withOpacity(0.3),
+                      colorScheme.primaryContainer.withOpacity(0.1),
                     ],
                   )
                 : null,
@@ -1096,7 +1094,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                   size: 20,
                   color: action.isEnabled
                       ? colorScheme.onPrimaryContainer
-                      : colorScheme.onSurface.withValues(alpha: 0.5),
+                      : colorScheme.onSurface.withOpacity(0.5),
                 ),
               ),
               const SizedBox(height: 8),
@@ -1108,7 +1106,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                     fontSize: 12,
                     color: action.isEnabled
                         ? colorScheme.onSurface
-                        : colorScheme.onSurface.withValues(alpha: 0.5),
+                        : colorScheme.onSurface.withOpacity(0.5),
                   ),
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
@@ -1121,7 +1119,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
                   action.description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 10,
-                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    color: colorScheme.onSurface.withOpacity(0.7),
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -1226,7 +1224,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.2),
+            color: iconColor.withOpacity(0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: iconColor, size: 16),
@@ -1245,7 +1243,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
               Text(
                 description,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
             ],
@@ -1254,7 +1252,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
         Text(
           time,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
+            color: colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
       ],
@@ -1287,7 +1285,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.errorContainer.withValues(alpha: 0.3),
+        color: colorScheme.errorContainer.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

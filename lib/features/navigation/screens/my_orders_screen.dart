@@ -213,7 +213,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
+                    color: statusColor.withOpacity( 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -347,7 +347,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
+                    color: statusColor.withOpacity( 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(

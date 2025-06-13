@@ -59,7 +59,7 @@ class CropFreshTheme {
         backgroundColor: CropFreshColors.orange10Primary, // 10% action color
         foregroundColor: CropFreshColors.onOrange10,
         elevation: 1, // Material 3 reduced elevation
-        shadowColor: CropFreshColors.orange10Primary.withValues(alpha: 0.3),
+        shadowColor: CropFreshColors.orange10Primary.withOpacity( 0.3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12), // Material 3 rounded corners
         ),
@@ -110,7 +110,7 @@ class CropFreshTheme {
     cardTheme: CardThemeData(
       color: CropFreshColors.background60Card, // 60% background
       elevation: 1, // Material 3 reduced elevation
-      shadowColor: CropFreshColors.green30Primary.withValues(alpha: 0.1),
+      shadowColor: CropFreshColors.green30Primary.withOpacity( 0.1),
       surfaceTintColor: CropFreshColors.green30Light, // 30% supporting tint
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16), // Material 3 rounded corners
@@ -125,14 +125,14 @@ class CropFreshTheme {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12), // Material 3 rounded corners
         borderSide: BorderSide(
-          color: CropFreshColors.green30Primary.withValues(alpha: 0.3),
+          color: CropFreshColors.green30Primary.withOpacity( 0.3),
           width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: CropFreshColors.green30Primary.withValues(alpha: 0.3),
+          color: CropFreshColors.green30Primary.withOpacity( 0.3),
           width: 1,
         ),
       ),
@@ -208,7 +208,7 @@ class CropFreshTheme {
         color: CropFreshColors.onGreen30Container,
       ),
       side: BorderSide(
-        color: CropFreshColors.green30Primary.withValues(alpha: 0.3), // 30% supporting color
+        color: CropFreshColors.green30Primary.withOpacity( 0.3), // 30% supporting color
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8), // Material 3 rounded corners
@@ -263,7 +263,7 @@ class CropFreshTheme {
 
     // * DIVIDER THEME (Material Design 3)
     dividerTheme: DividerThemeData(
-      color: CropFreshColors.green30Primary.withValues(alpha: 0.1), // 30% supporting color
+      color: CropFreshColors.green30Primary.withOpacity( 0.1), // 30% supporting color
       thickness: 1,
       space: 1,
     ),

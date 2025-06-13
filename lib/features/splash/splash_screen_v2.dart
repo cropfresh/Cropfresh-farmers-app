@@ -442,7 +442,7 @@ class _CropFreshSplashScreenV2State extends State<CropFreshSplashScreenV2>
                 ),
                 // Elevation shadow
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
+                  color: Colors.black.withOpacity( 0.3),
                   blurRadius: _logoElevationAnimation.value,
                   offset: Offset(0, _logoElevationAnimation.value * 0.5),
                 ),
@@ -464,14 +464,14 @@ class _CropFreshSplashScreenV2State extends State<CropFreshSplashScreenV2>
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            Colors.white.withValues(alpha: 0.2),
-                            Colors.white.withValues(alpha: 0.1),
+                            Colors.white.withOpacity( 0.2),
+                            Colors.white.withOpacity( 0.1),
                             Colors.transparent,
                           ],
                           stops: const [0.0, 0.5, 1.0],
                         ),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity( 0.2),
                           width: 2,
                         ),
                       ),
@@ -485,7 +485,7 @@ class _CropFreshSplashScreenV2State extends State<CropFreshSplashScreenV2>
                             return Icon(
                               Icons.eco,
                               size: 80,
-                              color: Colors.white.withValues(alpha: 0.9),
+                              color: Colors.white.withOpacity( 0.9),
                             );
                           },
                         ),
@@ -520,7 +520,7 @@ class _CropFreshSplashScreenV2State extends State<CropFreshSplashScreenV2>
                   letterSpacing: _textLetterSpacingAnimation.value,
                   shadows: [
                     Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: Colors.black.withOpacity( 0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 5),
                     ),
@@ -536,9 +536,9 @@ class _CropFreshSplashScreenV2State extends State<CropFreshSplashScreenV2>
                 shaderCallback: (bounds) {
                   return LinearGradient(
                     colors: [
-                      Colors.white.withValues(alpha: 0.9),
+                      Colors.white.withOpacity( 0.9),
                       CropFreshColors.green30Light,
-                      Colors.white.withValues(alpha: 0.9),
+                      Colors.white.withOpacity( 0.9),
                     ],
                     stops: [
                       _shimmerAnimation.value - 0.3,
@@ -554,7 +554,7 @@ class _CropFreshSplashScreenV2State extends State<CropFreshSplashScreenV2>
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w300,
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: Colors.white.withOpacity( 0.9),
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -574,7 +574,7 @@ class _CropFreshSplashScreenV2State extends State<CropFreshSplashScreenV2>
             return LinearGradient(
               colors: [
                 Colors.transparent,
-                Colors.white.withValues(alpha: 0.05),
+                Colors.white.withOpacity( 0.05),
                 Colors.transparent,
               ],
               stops: [
@@ -719,7 +719,7 @@ class WaveBackgroundPainter extends CustomPainter {
     // Wave layers
     for (int i = 0; i < 3; i++) {
       final wavePaint = Paint()
-        ..color = colors[1].withValues(alpha: 0.1 - i * 0.03)
+        ..color = colors[1].withOpacity( 0.1 - i * 0.03)
         ..style = PaintingStyle.fill;
 
       final path = Path();

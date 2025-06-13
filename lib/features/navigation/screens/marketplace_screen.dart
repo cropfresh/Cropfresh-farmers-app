@@ -286,7 +286,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
               end: Alignment.bottomRight,
               colors: [
                 CropFreshColors.surface60Primary,
-                CropFreshColors.surface60Primary.withValues(alpha: 0.95),
+                CropFreshColors.surface60Primary.withValues(alpha: 0.9),
               ],
             ),
           ),

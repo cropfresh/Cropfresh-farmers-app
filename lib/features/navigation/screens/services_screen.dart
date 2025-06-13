@@ -91,7 +91,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
             'Comprehensive agricultural services to support your farming journey',
             style: TextStyle(
               fontSize: isSmallScreen ? 14 : 16,
-              color: CropFreshColors.onOrange10.withValues(alpha: 0.9),
+              color: CropFreshColors.onOrange10.withOpacity( 0.9),
             ),
           ),
         ],
@@ -300,7 +300,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: service.color.withValues(alpha: 0.1),
+                  color: service.color.withOpacity( 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(service.icon, color: service.color, size: 24),

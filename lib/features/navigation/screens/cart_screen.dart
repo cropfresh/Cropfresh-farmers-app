@@ -107,26 +107,32 @@ class _CartScreenState extends State<CartScreen> {
 
   /// * Remove item from cart
   void _removeItem(String itemId) {
-    setState(() {
-      _cartItems.removeWhere((item) => item.id == itemId);
-    });
+    try {
+      setState(() {
+        _cartItems.removeWhere((item) => item.id == itemId);
+      });
 
-    _updateCartCount();
-    HapticFeedback.lightImpact();
+      _updateCartCount();
+      HapticFeedback.lightImpact();
 
-    // * Show confirmation snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Item removed from cart'),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () {
-            // * TODO: Implement undo functionality
-          },
-        ),
-      ),
-    );
+      // * Show confirmation snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Item removed from cart'),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () {
+                // * TODO: Implement undo functionality
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error removing item: $e');
+    }
   }
 
   /// * Update cart count in parent widget
@@ -253,7 +259,7 @@ class _CartScreenState extends State<CartScreen> {
                   Text(
                     item.description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                      color: colorScheme.onSurface.withOpacity(0.7),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -330,20 +336,20 @@ class _CartScreenState extends State<CartScreen> {
           Icon(
             Icons.shopping_cart_outlined,
             size: 80,
-            color: colorScheme.onSurface.withValues(alpha: 0.3),
+            color: colorScheme.onSurface.withOpacity(0.3),
           ),
           const SizedBox(height: 24),
           Text(
             'Your cart is empty',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
+              color: colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Add some products to get started',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
+              color: colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 32),
@@ -365,7 +371,7 @@ class _CartScreenState extends State<CartScreen> {
         color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.1),
+            color: colorScheme.shadow.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

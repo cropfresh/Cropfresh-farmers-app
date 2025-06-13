@@ -59,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           end: Alignment.bottomRight,
           colors: [
             CropFreshColors.green30Primary,
-            CropFreshColors.green30Primary.withValues(alpha: 0.8),
+            CropFreshColors.green30Primary.withOpacity( 0.8),
           ],
         ),
       ),
@@ -89,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // * Profile picture
           CircleAvatar(
             radius: isSmallScreen ? 40 : 50,
-            backgroundColor: CropFreshColors.onGreen30.withValues(alpha: 0.2),
+            backgroundColor: CropFreshColors.onGreen30.withOpacity( 0.2),
             child: Icon(
               Icons.person,
               size: isSmallScreen ? 40 : 50,
@@ -116,7 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             widget.userProfile.phoneNumber,
             style: TextStyle(
               fontSize: isSmallScreen ? 14 : 16,
-              color: CropFreshColors.onGreen30.withValues(alpha: 0.8),
+              color: CropFreshColors.onGreen30.withOpacity( 0.8),
             ),
           ),
 
@@ -129,7 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               '📍 ${widget.userProfile.formattedAddress}',
               style: TextStyle(
                 fontSize: isSmallScreen ? 14 : 16,
-                color: CropFreshColors.onGreen30.withValues(alpha: 0.8),
+                color: CropFreshColors.onGreen30.withOpacity( 0.8),
               ),
             ),
         ],
