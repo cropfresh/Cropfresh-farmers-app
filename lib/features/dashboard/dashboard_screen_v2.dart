@@ -1,7 +1,7 @@
 // ===================================================================
-// * MAIN DASHBOARD SCREEN V2
-// * Purpose: Comprehensive farmer dashboard with weather, market, notifications
-// * Features: Weather widget, market prices, quick actions, notifications
+// * MAIN DASHBOARD SCREEN V2 - MATERIAL 3 DESIGN
+// * Purpose: Comprehensive farmer dashboard with Material 3 components
+// * Features: Dynamic colors, modern cards, FAB, Navigation Rail
 // * State Management: Riverpod
 // * Security Level: MEDIUM - User-specific dashboard data
 // ===================================================================
@@ -17,8 +17,7 @@ import 'models/market_price.dart';
 import 'models/notification_data.dart';
 import 'models/quick_action.dart';
 
-// * MAIN DASHBOARD SCREEN
-// * Complete dashboard implementation with all features
+// * MAIN DASHBOARD SCREEN WITH MATERIAL 3 DESIGN
 class DashboardScreenV2 extends ConsumerStatefulWidget {
   final UserProfile userProfile;
   final Function(int)? onNavigateToTab;
@@ -33,155 +32,209 @@ class DashboardScreenV2 extends ConsumerStatefulWidget {
   ConsumerState<DashboardScreenV2> createState() => _DashboardScreenV2State();
 }
 
-class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
+class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2>
+    with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _isScrolled = false;
 
   @override
   void initState() {
     super.initState();
-    // * Initialize dashboard data when screen loads
+
+    // * Initialize animations for smooth Material 3 experience
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    // * Listen to scroll for dynamic app bar changes
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 80 && !_isScrolled) {
+        setState(() => _isScrolled = true);
+      } else if (_scrollController.offset <= 80 && _isScrolled) {
+        setState(() => _isScrolled = false);
+      }
+    });
+
+    // * Initialize dashboard data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(dashboardControllerProvider.notifier)
           .initializeDashboard(widget.userProfile.farmerId);
+      _animationController.forward();
     });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final dashboardState = ref.watch(dashboardControllerProvider);
-    final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.height < 700;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: CropFreshColors.background60Primary,
+      backgroundColor: colorScheme.surfaceContainerLowest,
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(),
+        color: colorScheme.primary,
         child: CustomScrollView(
           controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
           slivers: [
-            // * App bar with user greeting and sync status
-            _buildSliverAppBar(isSmallScreen, dashboardState),
+            // * Material 3 Large App Bar with dynamic title
+            _buildMaterial3AppBar(dashboardState, colorScheme),
 
-            // * Dashboard content
+            // * Dashboard content with Material 3 spacing
             SliverPadding(
-              padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // * Weather widget
-                  _buildWeatherCard(dashboardState, isSmallScreen),
+                  const SizedBox(height: 8),
 
-                  SizedBox(height: isSmallScreen ? 16 : 20),
+                  // * Hero stats section with Material 3 cards
+                  _buildHeroStatsSection(dashboardState, colorScheme),
 
-                  // * Market prices widget
-                  _buildMarketPricesCard(dashboardState, isSmallScreen),
+                  const SizedBox(height: 24),
 
-                  SizedBox(height: isSmallScreen ? 16 : 20),
+                  // * Weather card with elevated Material 3 design
+                  _buildMaterial3WeatherCard(dashboardState, colorScheme),
 
-                  // * Notifications panel
-                  _buildNotificationsCard(dashboardState, isSmallScreen),
+                  const SizedBox(height: 20),
 
-                  SizedBox(height: isSmallScreen ? 16 : 20),
+                  // * Market prices with segmented display
+                  _buildMaterial3MarketCard(dashboardState, colorScheme),
 
-                  // * Quick actions grid
-                  _buildQuickActionsSection(dashboardState, isSmallScreen),
+                  const SizedBox(height: 20),
 
-                  SizedBox(height: isSmallScreen ? 16 : 20),
+                  // * Notifications with modern list tiles
+                  _buildMaterial3NotificationsCard(dashboardState, colorScheme),
 
-                  // * Active orders card (placeholder)
-                  _buildActiveOrdersCard(isSmallScreen),
+                  const SizedBox(height: 20),
 
-                  // * Bottom padding for safe scrolling with navigation bar
-                  const SizedBox(height: 120),
+                  // * Quick actions with Material 3 buttons
+                  _buildMaterial3QuickActions(dashboardState, colorScheme),
+
+                  const SizedBox(height: 20),
+
+                  // * Recent activity timeline
+                  _buildRecentActivityCard(colorScheme),
+
+                  const SizedBox(height: 100), // * Safe area for FAB
                 ]),
               ),
             ),
           ],
         ),
       ),
+
+      // * Material 3 Floating Action Button
+      floatingActionButton: _buildMaterial3FAB(colorScheme),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
   // ============================================================================
-  // * APP BAR WIDGETS
+  // * MATERIAL 3 APP BAR
   // ============================================================================
 
-  Widget _buildSliverAppBar(bool isSmallScreen, dashboardState) {
-    return SliverAppBar(
-      expandedHeight: isSmallScreen ? 160 : 200,
-      floating: false,
+  Widget _buildMaterial3AppBar(dashboardState, ColorScheme colorScheme) {
+    return SliverAppBar.large(
       pinned: true,
-      backgroundColor: CropFreshColors.green30Primary,
-      automaticallyImplyLeading: false,
+      floating: false,
+      snap: false,
+      expandedHeight: 180,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: colorScheme.surfaceTint,
+      shadowColor: Colors.transparent,
+      leading: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: CircleAvatar(
+          backgroundColor: colorScheme.primaryContainer,
+          child: Text(
+            widget.userProfile.displayName.isNotEmpty
+                ? widget.userProfile.displayName[0].toUpperCase()
+                : 'F',
+            style: TextStyle(
+              color: colorScheme.onPrimaryContainer,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+      title: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: _isScrolled
+            ? Text(
+                'Hi, ${widget.userProfile.displayName.split(' ').first}!',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              )
+            : null,
+      ),
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                CropFreshColors.green30Primary,
-                CropFreshColors.green30Primary.withValues(alpha: 0.8),
-              ],
+              colors: [colorScheme.surface, colorScheme.surfaceContainerLow],
             ),
           ),
           child: SafeArea(
             child: Padding(
-              padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
+              padding: const EdgeInsets.fromLTRB(72, 40, 16, 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Good ${_getGreeting()}! 👋',
-                              style: TextStyle(
-                                fontSize: isSmallScreen ? 16 : 18,
-                                color: CropFreshColors.onGreen30.withValues(
-                                  alpha: 0.9,
-                                ),
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.userProfile.displayName,
-                              style: TextStyle(
-                                fontSize: isSmallScreen ? 24 : 28,
-                                color: CropFreshColors.onGreen30,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // * Sync status indicator
-                      _buildSyncStatusIndicator(dashboardState, isSmallScreen),
-                    ],
+                  Text(
+                    'Good ${_getGreeting()}! 👋',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.userProfile.displayName,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  // * Last sync time
                   if (dashboardState.lastSync != null)
-                    Text(
-                      'Last updated: ${_formatLastSync(dashboardState.lastSync!)}',
-                      style: TextStyle(
-                        fontSize: isSmallScreen ? 12 : 14,
-                        color: CropFreshColors.onGreen30.withValues(alpha: 0.8),
-                        fontWeight: FontWeight.w400,
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.sync,
+                          size: 16,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Updated ${_formatLastSync(dashboardState.lastSync!)}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                        ),
+                      ],
                     ),
                 ],
               ),
@@ -190,101 +243,96 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
         ),
       ),
       actions: [
-        // * Notification bell with badge
-        Stack(
-          children: [
-            IconButton(
-              icon: Icon(
-                Icons.notifications_outlined,
-                color: CropFreshColors.onGreen30,
+        // * Material 3 Notification Badge
+        IconButton.filledTonal(
+          onPressed: () => _showNotificationPanel(),
+          icon: Badge.count(
+            count:
+                dashboardState.notifications?.where((n) => !n.isRead).length ??
+                0,
+            child: const Icon(Icons.notifications_outlined),
+          ),
+        ),
+        const SizedBox(width: 8),
+        // * Settings menu
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert),
+          onSelected: _handleMenuAction,
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'profile',
+              child: ListTile(
+                leading: Icon(Icons.person_outline),
+                title: Text('Profile'),
+                contentPadding: EdgeInsets.zero,
               ),
-              onPressed: () => _showNotificationPanel(),
             ),
-            if (dashboardState.hasNotifications)
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    '${dashboardState.notifications?.where((n) => !n.isRead).length ?? 0}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+            const PopupMenuItem(
+              value: 'settings',
+              child: ListTile(
+                leading: Icon(Icons.settings_outlined),
+                title: Text('Settings'),
+                contentPadding: EdgeInsets.zero,
               ),
+            ),
+            const PopupMenuDivider(),
+            const PopupMenuItem(
+              value: 'logout',
+              child: ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Logout'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
           ],
         ),
-        IconButton(
-          icon: Icon(Icons.logout, color: CropFreshColors.onGreen30),
-          onPressed: _handleLogout,
-        ),
+        const SizedBox(width: 8),
       ],
     );
   }
 
-  Widget _buildSyncStatusIndicator(dashboardState, bool isSmallScreen) {
-    if (dashboardState.isInitialLoading) {
-      return const CircularProgressIndicator(
-        color: Colors.white,
-        strokeWidth: 2,
-      );
-    }
+  // ============================================================================
+  // * MATERIAL 3 HERO STATS SECTION
+  // ============================================================================
 
-    if (dashboardState.isOffline) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.orange,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off, size: 16, color: Colors.white),
-            const SizedBox(width: 4),
-            Text(
-              'Offline',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isSmallScreen ? 10 : 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.circular(12),
-      ),
+  Widget _buildHeroStatsSection(dashboardState, ColorScheme colorScheme) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.cloud_done, size: 16, color: Colors.white),
-          const SizedBox(width: 4),
-          Text(
-            'Synced',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: isSmallScreen ? 10 : 12,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: _buildStatCard(
+              'Total Orders',
+              '24',
+              Icons.shopping_bag_outlined,
+              colorScheme.primaryContainer,
+              colorScheme.onPrimaryContainer,
+              '+12%',
+              true,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              'Revenue',
+              '₹45.2K',
+              Icons.trending_up,
+              colorScheme.secondaryContainer,
+              colorScheme.onSecondaryContainer,
+              '+8.5%',
+              true,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              'Active Crops',
+              '7',
+              Icons.agriculture,
+              colorScheme.tertiaryContainer,
+              colorScheme.onTertiaryContainer,
+              '+2',
+              true,
             ),
           ),
         ],
@@ -292,17 +340,92 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
     );
   }
 
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color backgroundColor,
+    Color textColor,
+    String change,
+    bool isPositive,
+  ) {
+    return Card.filled(
+      color: backgroundColor,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(icon, color: textColor, size: 18),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isPositive
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : Colors.red.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      change,
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: isPositive
+                            ? Colors.green.shade700
+                            : Colors.red.shade700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Flexible(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Flexible(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: textColor.withValues(alpha: 0.8),
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ============================================================================
-  // * WEATHER WIDGET
+  // * MATERIAL 3 WEATHER CARD
   // ============================================================================
 
-  Widget _buildWeatherCard(dashboardState, bool isSmallScreen) {
+  Widget _buildMaterial3WeatherCard(dashboardState, ColorScheme colorScheme) {
     return Card(
-      color: CropFreshColors.surface,
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -310,161 +433,165 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
               children: [
                 Icon(
                   Icons.wb_sunny_outlined,
-                  color: CropFreshColors.green30Primary,
-                  size: 20,
+                  color: colorScheme.primary,
+                  size: 24,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   'Weather Today',
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 16 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: CropFreshColors.onBackground60,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
                 if (dashboardState.isWeatherLoading)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator.adaptive(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+                    ),
                   ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             if (dashboardState.hasWeatherError)
-              _buildErrorState(
+              _buildMaterial3ErrorState(
                 dashboardState.weatherError!,
                 () => _retryWeatherLoad(),
-                isSmallScreen,
+                colorScheme,
               )
             else if (dashboardState.hasWeatherData)
-              _buildWeatherContent(dashboardState.weather!, isSmallScreen)
+              _buildMaterial3WeatherContent(
+                dashboardState.weather!,
+                colorScheme,
+              )
             else
-              _buildLoadingWeatherContent(isSmallScreen),
+              _buildMaterial3LoadingContent(colorScheme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildWeatherContent(WeatherResponse weather, bool isSmallScreen) {
+  Widget _buildMaterial3WeatherContent(
+    WeatherResponse weather,
+    ColorScheme colorScheme,
+  ) {
     return Column(
       children: [
-        // * Current weather display
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${weather.current.temperature.toInt()}°C',
-                    style: TextStyle(
-                      fontSize: isSmallScreen ? 36 : 42,
-                      fontWeight: FontWeight.w700,
-                      color: CropFreshColors.onBackground60,
-                    ),
-                  ),
-                  Text(
-                    weather.current.condition,
-                    style: TextStyle(
-                      fontSize: isSmallScreen ? 14 : 16,
-                      color: CropFreshColors.onBackground60Secondary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  if (weather.current.hasAlert)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.warning,
-                            size: 16,
-                            color: Colors.red,
+        // * Current weather with Material 3 styling
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${weather.current.temperature.toInt()}°C',
+                      style: Theme.of(context).textTheme.headlineLarge
+                          ?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSurface,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Weather Alert',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: isSmallScreen ? 10 : 12,
-                              fontWeight: FontWeight.w500,
+                    ),
+                    Text(
+                      weather.current.condition,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    if (weather.current.hasAlert)
+                      Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.warning_amber,
+                              size: 16,
+                              color: colorScheme.onErrorContainer,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Text(
+                              'Weather Alert',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: colorScheme.onErrorContainer,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Text(
-                weather.current.icon,
-                style: TextStyle(fontSize: isSmallScreen ? 48 : 56),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
+              Text(weather.current.icon, style: const TextStyle(fontSize: 64)),
+            ],
+          ),
         ),
 
         const SizedBox(height: 16),
 
-        // * Weather details grid
-        Row(
-          children: [
-            Expanded(
-              child: _buildWeatherDetail(
+        // * Weather details with Material 3 chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildWeatherChip(
                 'Humidity',
                 '${weather.current.humidity.toInt()}%',
                 Icons.water_drop_outlined,
-                isSmallScreen,
+                colorScheme,
               ),
-            ),
-            Expanded(
-              child: _buildWeatherDetail(
+              const SizedBox(width: 8),
+              _buildWeatherChip(
                 'Wind',
                 '${weather.current.windSpeed.toInt()} km/h',
                 Icons.air,
-                isSmallScreen,
+                colorScheme,
               ),
-            ),
-            Expanded(
-              child: _buildWeatherDetail(
+              const SizedBox(width: 8),
+              _buildWeatherChip(
                 'UV Index',
                 '${weather.current.uvIndex}',
                 Icons.wb_sunny,
-                isSmallScreen,
+                colorScheme,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
-        // * 5-day forecast
+        // * 5-day forecast with horizontal scroll
         SizedBox(
-          height: isSmallScreen
-              ? 85
-              : 105, // ! FIX: Increased height to prevent overflow
-          child: ListView.builder(
+          height: 120,
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             itemCount: weather.forecast.length,
-            physics: const BouncingScrollPhysics(), // * Better scroll physics
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final forecast = weather.forecast[index];
-              return _buildForecastItem(forecast, isSmallScreen);
+              return _buildMaterial3ForecastItem(forecast, colorScheme);
             },
           ),
         ),
@@ -472,300 +599,266 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
     );
   }
 
-  Widget _buildWeatherDetail(
+  Widget _buildWeatherChip(
     String label,
     String value,
     IconData icon,
-    bool isSmallScreen,
+    ColorScheme colorScheme,
   ) {
-    return Column(
-      mainAxisSize:
-          MainAxisSize.min, // ! FIX: Use minimum size to prevent overflow
-      children: [
-        Icon(
-          icon,
-          size: isSmallScreen ? 16 : 20,
-          color: CropFreshColors.onBackground60Secondary,
-        ),
-        SizedBox(height: isSmallScreen ? 2 : 4), // ! FIX: Responsive spacing
-        Flexible(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: isSmallScreen ? 12 : 14,
-              fontWeight: FontWeight.w600,
-              color: CropFreshColors.onBackground60,
-            ),
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ),
-        Flexible(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: isSmallScreen ? 10 : 12,
-              color: CropFreshColors.onBackground60Secondary,
-            ),
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildForecastItem(WeatherForecast forecast, bool isSmallScreen) {
     return Container(
-      width: isSmallScreen ? 60 : 70,
-      margin: const EdgeInsets.only(right: 12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize:
-            MainAxisSize.min, // ! FIX: Prevent overflow by using minimum size
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Flexible(
-            child: Text(
-              DateFormat('E').format(forecast.date),
-              style: TextStyle(
-                fontSize: isSmallScreen ? 10 : 12,
-                color: CropFreshColors.onBackground60Secondary,
+          Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 6),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(height: 2), // * Reduced spacing to prevent overflow
-          Flexible(
-            child: Text(
-              forecast.icon,
-              style: TextStyle(
-                fontSize: isSmallScreen ? 18 : 22,
-              ), // * Slightly smaller icons
-              overflow: TextOverflow.visible,
-            ),
-          ),
-          const SizedBox(height: 2), // * Reduced spacing
-          Flexible(
-            child: Text(
-              '${forecast.maxTemp.toInt()}°',
-              style: TextStyle(
-                fontSize: isSmallScreen ? 11 : 13, // * Slightly smaller text
-                fontWeight: FontWeight.w600,
-                color: CropFreshColors.onBackground60,
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 9,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Flexible(
-            child: Text(
-              '${forecast.minTemp.toInt()}°',
-              style: TextStyle(
-                fontSize: isSmallScreen ? 9 : 11, // * Slightly smaller text
-                color: CropFreshColors.onBackground60Secondary,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLoadingWeatherContent(bool isSmallScreen) {
-    return SizedBox(
-      height: isSmallScreen ? 120 : 150,
-      child: const Center(child: CircularProgressIndicator()),
+  Widget _buildMaterial3ForecastItem(
+    WeatherForecast forecast,
+    ColorScheme colorScheme,
+  ) {
+    return Container(
+      width: 75,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            DateFormat('E').format(forecast.date),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurface.withValues(alpha: 0.8),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(forecast.icon, style: const TextStyle(fontSize: 20)),
+          const SizedBox(height: 6),
+          Text(
+            '${forecast.maxTemp.toInt()}°',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            '${forecast.minTemp.toInt()}°',
+            style: TextStyle(
+              fontSize: 10,
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 
   // ============================================================================
-  // * MARKET PRICES WIDGET
+  // * MATERIAL 3 MARKET PRICES CARD
   // ============================================================================
 
-  Widget _buildMarketPricesCard(dashboardState, bool isSmallScreen) {
+  Widget _buildMaterial3MarketCard(dashboardState, ColorScheme colorScheme) {
     return Card(
-      color: CropFreshColors.surface,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 1,
       child: Padding(
-        padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.trending_up,
-                  color: CropFreshColors.green30Primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
+                Icon(Icons.trending_up, color: colorScheme.primary, size: 24),
+                const SizedBox(width: 12),
                 Text(
                   'Market Prices',
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 16 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: CropFreshColors.onBackground60,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
                 if (dashboardState.isMarketLoading)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator.adaptive(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+                    ),
                   ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             if (dashboardState.hasMarketError)
-              _buildErrorState(
+              _buildMaterial3ErrorState(
                 dashboardState.marketError!,
                 () => _retryMarketLoad(),
-                isSmallScreen,
+                colorScheme,
               )
             else if (dashboardState.hasMarketData)
-              _buildMarketContent(dashboardState.marketData!, isSmallScreen)
+              _buildMaterial3MarketContent(
+                dashboardState.marketData!,
+                colorScheme,
+              )
             else
-              _buildLoadingMarketContent(isSmallScreen),
+              _buildMaterial3LoadingContent(colorScheme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMarketContent(
+  Widget _buildMaterial3MarketContent(
     MarketPriceResponse marketData,
-    bool isSmallScreen,
+    ColorScheme colorScheme,
   ) {
     return Column(
       children: [
         ...marketData.prices
             .take(4)
-            .map((price) => _buildPriceItem(price, isSmallScreen)),
+            .map(
+              (price) => Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.agriculture,
+                        size: 20,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            price.cropName,
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            price.mandiName,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '₹${price.currentPrice.toStringAsFixed(0)}',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getTrendColor(
+                              price.trend,
+                            ).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            price.formattedChange,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: _getTrendColor(price.trend),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
         if (marketData.prices.length > 4)
-          TextButton(
-            onPressed: () => _showAllPrices(marketData.prices),
-            child: Text(
-              'View All Prices (${marketData.prices.length})',
-              style: TextStyle(
-                color: CropFreshColors.green30Primary,
-                fontWeight: FontWeight.w500,
-              ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TextButton.icon(
+              onPressed: () => _showAllPrices(marketData.prices),
+              icon: const Icon(Icons.arrow_forward),
+              label: Text('View All Prices (${marketData.prices.length})'),
             ),
           ),
       ],
     );
   }
 
-  Widget _buildPriceItem(MarketPrice price, bool isSmallScreen) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: CropFreshColors.onBackground60.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  price.cropName,
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 14 : 16,
-                    fontWeight: FontWeight.w600,
-                    color: CropFreshColors.onBackground60,
-                  ),
-                ),
-                Text(
-                  price.mandiName,
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 12 : 14,
-                    color: CropFreshColors.onBackground60Secondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '₹${price.currentPrice.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 14 : 16,
-                    fontWeight: FontWeight.w600,
-                    color: CropFreshColors.onBackground60,
-                  ),
-                ),
-                Text(
-                  'per ${price.unit}',
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 10 : 12,
-                    color: CropFreshColors.onBackground60Secondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: _getTrendColor(price.trend).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              price.formattedChange,
-              style: TextStyle(
-                fontSize: isSmallScreen ? 10 : 12,
-                fontWeight: FontWeight.w500,
-                color: _getTrendColor(price.trend),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingMarketContent(bool isSmallScreen) {
-    return Column(
-      children: List.generate(
-        3,
-        (index) => Container(
-          height: isSmallScreen ? 40 : 50,
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: CropFreshColors.onBackground60.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-      ),
-    );
-  }
-
   // ============================================================================
-  // * NOTIFICATIONS WIDGET
+  // * MATERIAL 3 NOTIFICATIONS CARD
   // ============================================================================
 
-  Widget _buildNotificationsCard(dashboardState, bool isSmallScreen) {
+  Widget _buildMaterial3NotificationsCard(
+    dashboardState,
+    ColorScheme colorScheme,
+  ) {
     return Card(
-      color: CropFreshColors.surface,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 1,
       child: Padding(
-        padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -773,261 +866,267 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
               children: [
                 Icon(
                   Icons.notifications_outlined,
-                  color: CropFreshColors.green30Primary,
-                  size: 20,
+                  color: colorScheme.primary,
+                  size: 24,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
-                  'Notifications',
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 16 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: CropFreshColors.onBackground60,
-                  ),
+                  'Recent Notifications',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
                 if (dashboardState.isNotificationsLoading)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator.adaptive(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+                    ),
                   ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             if (dashboardState.hasNotificationError)
-              _buildErrorState(
+              _buildMaterial3ErrorState(
                 dashboardState.notificationError!,
                 () => _retryNotificationsLoad(),
-                isSmallScreen,
+                colorScheme,
               )
             else if (dashboardState.hasNotifications)
-              _buildNotificationsContent(
+              _buildMaterial3NotificationsContent(
                 dashboardState.notifications!,
-                isSmallScreen,
+                colorScheme,
               )
             else
-              _buildEmptyNotificationsContent(isSmallScreen),
+              _buildMaterial3EmptyNotifications(colorScheme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNotificationsContent(
+  Widget _buildMaterial3NotificationsContent(
     List<NotificationData> notifications,
-    bool isSmallScreen,
+    ColorScheme colorScheme,
   ) {
     final recentNotifications = notifications.take(3).toList();
 
     return Column(
       children: [
         ...recentNotifications.map(
-          (notification) => _buildNotificationItem(notification, isSmallScreen),
+          (notification) => Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(16),
+              tileColor: notification.isRead
+                  ? colorScheme.surfaceContainerLow
+                  : colorScheme.primaryContainer.withValues(alpha: 0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _getPriorityColor(
+                    notification.priority,
+                  ).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  _getNotificationIcon(notification.priority),
+                  color: _getPriorityColor(notification.priority),
+                  size: 20,
+                ),
+              ),
+              title: Text(
+                notification.title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: notification.isRead
+                      ? FontWeight.w500
+                      : FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                notification.message,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              trailing: Text(
+                _formatNotificationTime(notification.timestamp),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+              onTap: () => _markNotificationAsRead(notification.id),
+            ),
+          ),
         ),
 
         if (notifications.length > 3)
-          TextButton(
-            onPressed: () => _showAllNotifications(notifications),
-            child: Text(
-              'View All Notifications (${notifications.length})',
-              style: TextStyle(
-                color: CropFreshColors.green30Primary,
-                fontWeight: FontWeight.w500,
-              ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TextButton.icon(
+              onPressed: () => _showAllNotifications(notifications),
+              icon: const Icon(Icons.arrow_forward),
+              label: Text('View All Notifications (${notifications.length})'),
             ),
           ),
       ],
     );
   }
 
-  Widget _buildNotificationItem(
-    NotificationData notification,
-    bool isSmallScreen,
-  ) {
+  Widget _buildMaterial3EmptyNotifications(ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: CropFreshColors.onBackground60.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.all(32),
+      child: Column(
         children: [
-          Container(
-            width: 8,
-            height: 8,
-            margin: const EdgeInsets.only(top: 6, right: 12),
-            decoration: BoxDecoration(
-              color: notification.isRead
-                  ? CropFreshColors.onBackground60.withValues(alpha: 0.3)
-                  : _getPriorityColor(notification.priority),
-              borderRadius: BorderRadius.circular(4),
+          Icon(
+            Icons.notifications_none_outlined,
+            size: 48,
+            color: colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No new notifications',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  notification.title,
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 14 : 16,
-                    fontWeight: notification.isRead
-                        ? FontWeight.w500
-                        : FontWeight.w600,
-                    color: notification.isRead
-                        ? CropFreshColors.onBackground60Secondary
-                        : CropFreshColors.onBackground60,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  notification.message,
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 12 : 14,
-                    color: CropFreshColors.onBackground60Secondary,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatNotificationTime(notification.timestamp),
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 10 : 12,
-                    color: CropFreshColors.onBackground60Secondary,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 8),
+          Text(
+            'You\'re all caught up!',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
-          if (!notification.isRead)
-            IconButton(
-              icon: const Icon(Icons.mark_as_unread, size: 16),
-              onPressed: () => _markNotificationAsRead(notification.id),
-              color: CropFreshColors.onBackground60Secondary,
-            ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyNotificationsContent(bool isSmallScreen) {
-    return Container(
-      height: isSmallScreen ? 80 : 100,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.notifications_none,
-              size: isSmallScreen ? 32 : 40,
-              color: CropFreshColors.onBackground60Secondary,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'No new notifications',
-              style: TextStyle(
-                fontSize: isSmallScreen ? 14 : 16,
-                color: CropFreshColors.onBackground60Secondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ============================================================================
-  // * QUICK ACTIONS WIDGET
+  // * MATERIAL 3 QUICK ACTIONS
   // ============================================================================
 
-  Widget _buildQuickActionsSection(dashboardState, bool isSmallScreen) {
+  Widget _buildMaterial3QuickActions(dashboardState, ColorScheme colorScheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Quick Actions',
-          style: TextStyle(
-            fontSize: isSmallScreen ? 18 : 20,
-            fontWeight: FontWeight.w600,
-            color: CropFreshColors.onBackground60,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 16),
         if (dashboardState.quickActions != null)
-          _buildQuickActionsGrid(dashboardState.quickActions!, isSmallScreen)
+          _buildMaterial3QuickActionsGrid(
+            dashboardState.quickActions!,
+            colorScheme,
+          )
         else
-          _buildLoadingQuickActions(isSmallScreen),
+          _buildMaterial3LoadingContent(colorScheme),
       ],
     );
   }
 
-  Widget _buildQuickActionsGrid(List<QuickAction> actions, bool isSmallScreen) {
+  Widget _buildMaterial3QuickActionsGrid(
+    List<QuickAction> actions,
+    ColorScheme colorScheme,
+  ) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.2,
       ),
       itemCount: actions.length,
       itemBuilder: (context, index) {
         final action = actions[index];
-        return _buildQuickActionCard(action, isSmallScreen);
+        return _buildMaterial3ActionCard(action, colorScheme);
       },
     );
   }
 
-  Widget _buildQuickActionCard(QuickAction action, bool isSmallScreen) {
+  Widget _buildMaterial3ActionCard(
+    QuickAction action,
+    ColorScheme colorScheme,
+  ) {
     return Card(
-      color: CropFreshColors.surface,
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: action.isEnabled ? 1 : 0,
       child: InkWell(
         onTap: action.isEnabled ? () => _handleQuickAction(action) : null,
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: action.isEnabled
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      colorScheme.primaryContainer.withValues(alpha: 0.1),
+                    ],
+                  )
+                : null,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                action.icon,
-                size: isSmallScreen ? 28 : 32,
-                color: action.isEnabled
-                    ? CropFreshColors.green30Primary
-                    : CropFreshColors.onBackground60Secondary,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: action.isEnabled
+                      ? colorScheme.primaryContainer
+                      : colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  action.icon,
+                  size: 20,
+                  color: action.isEnabled
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
               ),
               const SizedBox(height: 8),
-              Text(
-                action.title,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 14 : 16,
-                  fontWeight: FontWeight.w600,
-                  color: action.isEnabled
-                      ? CropFreshColors.onBackground60
-                      : CropFreshColors.onBackground60Secondary,
+              Flexible(
+                child: Text(
+                  action.title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: action.isEnabled
+                        ? colorScheme.onSurface
+                        : colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 4),
-              Text(
-                action.description,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 10 : 12,
-                  color: CropFreshColors.onBackground60Secondary,
+              const SizedBox(height: 2),
+              Flexible(
+                child: Text(
+                  action.description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 10,
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
               if (action.badge != null)
                 Container(
@@ -1037,16 +1136,17 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: colorScheme.error,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     action.badge!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
+                    style: TextStyle(
+                      color: colorScheme.onError,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w600,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
             ],
@@ -1056,83 +1156,56 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
     );
   }
 
-  Widget _buildLoadingQuickActions(bool isSmallScreen) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.3,
-      ),
-      itemCount: 6,
-      itemBuilder: (context, index) {
-        return Container(
-          decoration: BoxDecoration(
-            color: CropFreshColors.onBackground60.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-        );
-      },
-    );
-  }
-
   // ============================================================================
-  // * ACTIVE ORDERS WIDGET (PLACEHOLDER)
+  // * RECENT ACTIVITY CARD
   // ============================================================================
 
-  Widget _buildActiveOrdersCard(bool isSmallScreen) {
+  Widget _buildRecentActivityCard(ColorScheme colorScheme) {
     return Card(
-      color: CropFreshColors.surface,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 1,
       child: Padding(
-        padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.shopping_bag_outlined,
-                  color: CropFreshColors.green30Primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
+                Icon(Icons.timeline, color: colorScheme.primary, size: 24),
+                const SizedBox(width: 12),
                 Text(
-                  'Active Orders',
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 16 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: CropFreshColors.onBackground60,
-                  ),
+                  'Recent Activity',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Container(
-              height: isSmallScreen ? 80 : 100,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.shopping_bag_outlined,
-                      size: isSmallScreen ? 32 : 40,
-                      color: CropFreshColors.onBackground60Secondary,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'No active orders',
-                      style: TextStyle(
-                        fontSize: isSmallScreen ? 14 : 16,
-                        color: CropFreshColors.onBackground60Secondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 20),
+            _buildActivityItem(
+              'Order #1234 delivered',
+              'Your tomatoes were successfully delivered',
+              Icons.check_circle,
+              colorScheme.primary,
+              '2 hours ago',
+              colorScheme,
+            ),
+            const SizedBox(height: 12),
+            _buildActivityItem(
+              'New order received',
+              'Order #1235 for 50kg potatoes',
+              Icons.shopping_cart,
+              colorScheme.secondary,
+              '5 hours ago',
+              colorScheme,
+            ),
+            const SizedBox(height: 12),
+            _buildActivityItem(
+              'Weather alert',
+              'Heavy rain expected tomorrow',
+              Icons.warning_amber,
+              colorScheme.error,
+              '1 day ago',
+              colorScheme,
             ),
           ],
         ),
@@ -1140,53 +1213,149 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
     );
   }
 
+  Widget _buildActivityItem(
+    String title,
+    String description,
+    IconData icon,
+    Color iconColor,
+    String time,
+    ColorScheme colorScheme,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: iconColor, size: 16),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              Text(
+                description,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Text(
+          time,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+      ],
+    );
+  }
+
   // ============================================================================
-  // * ERROR STATE WIDGET
+  // * MATERIAL 3 FAB
   // ============================================================================
 
-  Widget _buildErrorState(
+  Widget _buildMaterial3FAB(ColorScheme colorScheme) {
+    return FloatingActionButton.extended(
+      onPressed: () => _handleCreateOrder(),
+      icon: const Icon(Icons.add),
+      label: const Text('New Order'),
+      backgroundColor: colorScheme.primaryContainer,
+      foregroundColor: colorScheme.onPrimaryContainer,
+    );
+  }
+
+  // ============================================================================
+  // * UTILITY WIDGETS AND METHODS
+  // ============================================================================
+
+  Widget _buildMaterial3ErrorState(
     String error,
     VoidCallback onRetry,
-    bool isSmallScreen,
+    ColorScheme colorScheme,
   ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: colorScheme.errorContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 20),
+              Icon(Icons.error_outline, color: colorScheme.error, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   error,
                   style: TextStyle(
-                    fontSize: isSmallScreen ? 12 : 14,
-                    color: Colors.red.shade700,
+                    fontSize: 14,
+                    color: colorScheme.onErrorContainer,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: onRetry,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade50,
-              foregroundColor: Colors.red.shade700,
-              elevation: 0,
-            ),
-            child: Text(
-              'Retry',
-              style: TextStyle(fontSize: isSmallScreen ? 12 : 14),
-            ),
-          ),
+          const SizedBox(height: 12),
+          FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
         ],
       ),
+    );
+  }
+
+  Widget _buildMaterial3LoadingContent(ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      child: Center(
+        child: CircularProgressIndicator.adaptive(
+          valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+        ),
+      ),
+    );
+  }
+
+  IconData _getNotificationIcon(NotificationPriority priority) {
+    switch (priority) {
+      case NotificationPriority.low:
+        return Icons.info_outline;
+      case NotificationPriority.medium:
+        return Icons.notifications_outlined;
+      case NotificationPriority.high:
+        return Icons.priority_high;
+      case NotificationPriority.urgent:
+        return Icons.warning_amber;
+    }
+  }
+
+  void _handleMenuAction(String action) {
+    switch (action) {
+      case 'profile':
+        _navigateToTab(3);
+        break;
+      case 'settings':
+        // TODO: Navigate to settings
+        break;
+      case 'logout':
+        _handleLogout();
+        break;
+    }
+  }
+
+  void _handleCreateOrder() {
+    // TODO: Navigate to create order screen
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Create order feature coming soon!')),
     );
   }
 
