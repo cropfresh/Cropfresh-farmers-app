@@ -154,8 +154,9 @@ class UserProfile {
     final parts = <String>[];
     if (village != null && village!.isNotEmpty) parts.add(village!);
     if (district != null && district!.isNotEmpty) parts.add(district!);
-    if (addressState != null && addressState!.isNotEmpty)
+    if (addressState != null && addressState!.isNotEmpty) {
       parts.add(addressState!);
+    }
     if (pincode != null && pincode!.isNotEmpty) parts.add(pincode!);
 
     return parts.isNotEmpty

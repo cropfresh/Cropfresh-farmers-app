@@ -1,12 +1,10 @@
 // ===================================================================
 // * FARM DETAILS REPOSITORY
-// * Purpose: Handle API calls and offline storage for farm details
-// * API Integration: POST /api/farmer/farm-details
-// * Offline Support: Cache data when network unavailable
-// * Security Level: HIGH - Handles sensitive farm data
+// * Purpose: Farm details data persistence and API integration
+// * Features: Offline support, data validation, sync management
+// * Security Level: MEDIUM - Handles farmer's farm data
 // ===================================================================
 
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'models/farm_details.dart';
@@ -16,19 +14,18 @@ import 'models/crop.dart';
 /// * Manages farm details data persistence and API integration
 class FarmDetailsRepository {
   // TODO: Replace with actual HTTP client (dio, http, etc.)
-  // final HttpClient _httpClient;
-  // final SharedPreferences _prefs;
+  // final HttpClient _httpClient = HttpClient();
 
   // * API ENDPOINTS
-  static const String _farmDetailsEndpoint = '/api/farmer/farm-details';
+  static const String _farmDetailsEndpoint = '/api/farmers/farm-details';
   static const String _cropsEndpoint = '/api/crops';
   static const String _baseUrl =
       'https://api.cropfresh.com'; // TODO: Move to config
 
-  // * LOCAL STORAGE KEYS
+  // * CACHE KEYS
   static const String _offlineFarmDetailsKey = 'offline_farm_details';
   static const String _cachedCropsKey = 'cached_crops';
-  static const String _lastSyncKey = 'last_sync_timestamp';
+  static const String _lastSyncKey = 'farm_details_last_sync';
 
   /// * SUBMIT FARM DETAILS TO API
   /// * Attempts API call first, falls back to offline storage

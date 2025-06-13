@@ -35,11 +35,10 @@ class WeatherService {
     return _getMockForecastData();
   }
 
-  /// * Check for severe weather alerts
-  Future<List<WeatherData>> getWeatherAlerts() async {
+  /// * Get weather alerts for farmer's location
+  Future<List<String>> getWeatherAlerts(String location) async {
     // TODO: Implement weather alerts API
     await Future.delayed(const Duration(milliseconds: 800));
-
     return [];
   }
 
@@ -61,27 +60,6 @@ class WeatherService {
         return 'Overcast conditions. Suitable for planting activities.';
       default:
         return 'Monitor weather conditions for field activities.';
-    }
-  }
-
-  /// * Get weather icon based on condition
-  String _getWeatherIcon(String condition) {
-    switch (condition.toLowerCase()) {
-      case 'sunny':
-      case 'clear':
-        return '☀️';
-      case 'cloudy':
-      case 'overcast':
-        return '☁️';
-      case 'rain':
-      case 'rainy':
-        return '🌧️';
-      case 'thunderstorm':
-        return '⛈️';
-      case 'snow':
-        return '❄️';
-      default:
-        return '🌤️';
     }
   }
 

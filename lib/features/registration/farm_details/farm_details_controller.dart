@@ -60,7 +60,7 @@ class FarmDetailsController extends ChangeNotifier {
 
   // * CROP SELECTION
   List<Crop> _availableCrops = [];
-  List<String> _selectedCropIds = [];
+  final List<String> _selectedCropIds = [];
   bool _isCropsLoading = false;
 
   // * IRRIGATION

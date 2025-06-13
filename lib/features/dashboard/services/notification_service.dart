@@ -74,49 +74,23 @@ class NotificationService {
     // * Configure notification preferences
   }
 
-  /// * Update notification preferences
+  /// * Initialize push notifications (FCM, local notifications)
+  Future<void> initializePushNotifications() async {
+    // TODO: Implement push notification registration
+    // * Request notification permissions
+    // * Register with FCM
+    // * Set up local notification channels
+    // * Handle notification taps and deep links
+  }
+
+  /// * Configure notification preferences
   Future<void> updateNotificationPreferences(
-    String farmerId,
-    Map<NotificationType, bool> preferences,
+    Map<String, bool> preferences,
   ) async {
     // TODO: Implement notification preferences API
-    await Future.delayed(const Duration(milliseconds: 600));
-  }
-
-  // ============================================================================
-  // * HELPER METHODS
-  // ============================================================================
-
-  /// * Get notification icon based on type
-  String _getNotificationIcon(NotificationType type) {
-    switch (type) {
-      case NotificationType.system:
-        return '⚙️';
-      case NotificationType.order:
-        return '📦';
-      case NotificationType.weather:
-        return '🌤️';
-      case NotificationType.government:
-        return '🏛️';
-      case NotificationType.marketing:
-        return '📢';
-      case NotificationType.alert:
-        return '🚨';
-    }
-  }
-
-  /// * Get notification color based on priority
-  String _getNotificationColor(NotificationPriority priority) {
-    switch (priority) {
-      case NotificationPriority.low:
-        return 'gray';
-      case NotificationPriority.medium:
-        return 'blue';
-      case NotificationPriority.high:
-        return 'orange';
-      case NotificationPriority.urgent:
-        return 'red';
-    }
+    // * Save to local storage
+    // * Sync with backend
+    // * Update FCM topics subscription
   }
 
   // ============================================================================

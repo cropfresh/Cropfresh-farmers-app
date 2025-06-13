@@ -7,15 +7,17 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../lib/features/dashboard/controllers/dashboard_controller.dart';
-import '../../../lib/features/dashboard/models/dashboard_state.dart';
-import '../../../lib/features/dashboard/models/weather_data.dart';
-import '../../../lib/features/dashboard/models/market_price.dart';
-import '../../../lib/features/dashboard/models/notification_data.dart';
-import '../../../lib/features/dashboard/services/weather_service.dart';
-import '../../../lib/features/dashboard/services/market_service.dart';
-import '../../../lib/features/dashboard/services/notification_service.dart';
-import '../../../lib/features/dashboard/repositories/dashboard_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/controllers/dashboard_controller.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/models/dashboard_state.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/models/weather_data.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/models/market_price.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/models/notification_data.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/models/quick_action.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/services/weather_service.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/services/market_service.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/services/notification_service.dart';
+import 'package:cropfresh_farmers_app/features/dashboard/repositories/dashboard_repository.dart';
 
 // * MOCK SERVICES FOR TESTING
 class MockWeatherService extends WeatherService {
@@ -101,11 +103,11 @@ class MockDashboardRepository extends DashboardRepository {
   Future<List<QuickAction>> getQuickActions() async {
     await Future.delayed(const Duration(milliseconds: 50));
     return [
-      QuickAction(
+      const QuickAction(
         id: 'test_action',
         title: 'Test Action',
         description: 'Test Description',
-        icon: Icons.test_tube,
+        icon: Icons.agriculture,
         route: '/test',
       ),
     ];

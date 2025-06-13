@@ -35,11 +35,20 @@ class MarketService {
     return [];
   }
 
-  /// * Get nearby mandi prices
-  Future<List<MarketPrice>> getNearbyMandiPrices(String location) async {
-    // TODO: Implement location-based mandi price API
-    await Future.delayed(const Duration(milliseconds: 1000));
+  /// * Get historical price data for a crop over time
+  Future<List<MarketPrice>> getHistoricalPrices(String cropId, int days) async {
+    // TODO: Implement historical price data API
+    await Future.delayed(const Duration(milliseconds: 300));
+    return [];
+  }
 
+  /// * Get mandi prices near farmer's location
+  Future<List<MarketPrice>> getNearbyMandiPrices(
+    String location,
+    double radius,
+  ) async {
+    // TODO: Implement location-based mandi price API
+    await Future.delayed(const Duration(milliseconds: 400));
     return [];
   }
 
@@ -52,11 +61,6 @@ class MarketService {
     if (current > previous) return PriceTrend.up;
     if (current < previous) return PriceTrend.down;
     return PriceTrend.stable;
-  }
-
-  /// * Format price for display
-  String _formatPrice(double price, String unit) {
-    return '₹${price.toStringAsFixed(2)}/$unit';
   }
 
   // ============================================================================

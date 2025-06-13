@@ -19,8 +19,29 @@ class RegistrationFlow extends StatefulWidget {
 }
 
 class _RegistrationFlowState extends State<RegistrationFlow> {
+  // * STATE MANAGEMENT
   int _currentStep = 0;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  // * FORM CONTROLLERS
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  // * REGISTRATION DATA
   String? _phoneNumber;
+  String? _farmerName;
+  String? _email;
+  String? _otp;
+  // TODO: Use LatLng from google_maps_flutter when available
+  Map<String, double>? _farmLocation;
+
+  // TODO: Add controllers and services for OTP, location, and offline caching
+  // Controllers for OTP, MPIN, Location services will be added here
+  String _enteredOtp = '';
+  String _enteredMpin = '';
+
   final List<TextEditingController> _otpControllers = List.generate(
     6,
     (_) => TextEditingController(),
@@ -39,20 +60,12 @@ class _RegistrationFlowState extends State<RegistrationFlow> {
   String? _fullName;
   String? _farmerId;
   String? _experienceLevel;
-  // TODO: Use LatLng from google_maps_flutter when available
-  String? _farmLocation;
   String? _manualAddress;
   double? _landArea;
   String? _ownershipType;
   List<String> _primaryCrops = [];
   String? _irrigationType;
   String? _irrigationSource;
-
-  // TODO: Add controllers and services for OTP, location, and offline caching
-
-  String get _enteredOtp => _otpControllers.map((c) => c.text).join();
-  String get _enteredMpin => _mpinControllers.map((c) => c.text).join();
-  String get _enteredReMpin => _reMpinControllers.map((c) => c.text).join();
 
   void _goToNextStep() {
     if (_currentStep < 2) {

@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme/colors.dart';
 import 'login_controller.dart';
 import 'login_repository.dart';
-import '../dashboard/dashboard_screen.dart';
+import '../navigation/main_navigation.dart';
 
 /// * LOGIN SCREEN WIDGET
 /// * Handles phone number and MPIN authentication
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen>
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) =>
-            DashboardScreen(userProfile: _loginController.userProfile!),
+            MainNavigationWrapper(userProfile: _loginController.userProfile!),
       ),
     );
   }

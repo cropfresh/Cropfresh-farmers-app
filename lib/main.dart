@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'features/splash/splash_screen_v2.dart';
 import 'features/home/home_screen.dart';
@@ -18,8 +19,8 @@ void main() {
     DeviceOrientation.portraitDown,
   ]);
 
-  // * RUN APP
-  runApp(const CropFreshApp());
+  // * RUN APP with ProviderScope for Riverpod state management
+  runApp(ProviderScope(child: const CropFreshApp()));
 }
 
 /// * CROPFRESH APPLICATION ROOT

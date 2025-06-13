@@ -21,8 +21,13 @@ import 'models/quick_action.dart';
 // * Complete dashboard implementation with all features
 class DashboardScreenV2 extends ConsumerStatefulWidget {
   final UserProfile userProfile;
+  final Function(int)? onNavigateToTab;
 
-  const DashboardScreenV2({super.key, required this.userProfile});
+  const DashboardScreenV2({
+    super.key,
+    required this.userProfile,
+    this.onNavigateToTab,
+  });
 
   @override
   ConsumerState<DashboardScreenV2> createState() => _DashboardScreenV2State();
@@ -92,8 +97,8 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
                   // * Active orders card (placeholder)
                   _buildActiveOrdersCard(isSmallScreen),
 
-                  // * Bottom padding for safe scrolling
-                  const SizedBox(height: 80),
+                  // * Bottom padding for safe scrolling with navigation bar
+                  const SizedBox(height: 120),
                 ]),
               ),
             ),
@@ -450,10 +455,13 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
 
         // * 5-day forecast
         SizedBox(
-          height: isSmallScreen ? 80 : 100,
+          height: isSmallScreen
+              ? 85
+              : 105, // ! FIX: Increased height to prevent overflow
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: weather.forecast.length,
+            physics: const BouncingScrollPhysics(), // * Better scroll physics
             itemBuilder: (context, index) {
               final forecast = weather.forecast[index];
               return _buildForecastItem(forecast, isSmallScreen);
@@ -471,26 +479,36 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
     bool isSmallScreen,
   ) {
     return Column(
+      mainAxisSize:
+          MainAxisSize.min, // ! FIX: Use minimum size to prevent overflow
       children: [
         Icon(
           icon,
           size: isSmallScreen ? 16 : 20,
           color: CropFreshColors.onBackground60Secondary,
         ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: isSmallScreen ? 12 : 14,
-            fontWeight: FontWeight.w600,
-            color: CropFreshColors.onBackground60,
+        SizedBox(height: isSmallScreen ? 2 : 4), // ! FIX: Responsive spacing
+        Flexible(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: isSmallScreen ? 12 : 14,
+              fontWeight: FontWeight.w600,
+              color: CropFreshColors.onBackground60,
+            ),
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isSmallScreen ? 10 : 12,
-            color: CropFreshColors.onBackground60Secondary,
+        Flexible(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: isSmallScreen ? 10 : 12,
+              color: CropFreshColors.onBackground60Secondary,
+            ),
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
           ),
         ),
       ],
@@ -503,33 +521,49 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
       margin: const EdgeInsets.only(right: 12),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize:
+            MainAxisSize.min, // ! FIX: Prevent overflow by using minimum size
         children: [
-          Text(
-            DateFormat('E').format(forecast.date),
-            style: TextStyle(
-              fontSize: isSmallScreen ? 10 : 12,
-              color: CropFreshColors.onBackground60Secondary,
+          Flexible(
+            child: Text(
+              DateFormat('E').format(forecast.date),
+              style: TextStyle(
+                fontSize: isSmallScreen ? 10 : 12,
+                color: CropFreshColors.onBackground60Secondary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            forecast.icon,
-            style: TextStyle(fontSize: isSmallScreen ? 20 : 24),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${forecast.maxTemp.toInt()}°',
-            style: TextStyle(
-              fontSize: isSmallScreen ? 12 : 14,
-              fontWeight: FontWeight.w600,
-              color: CropFreshColors.onBackground60,
+          const SizedBox(height: 2), // * Reduced spacing to prevent overflow
+          Flexible(
+            child: Text(
+              forecast.icon,
+              style: TextStyle(
+                fontSize: isSmallScreen ? 18 : 22,
+              ), // * Slightly smaller icons
+              overflow: TextOverflow.visible,
             ),
           ),
-          Text(
-            '${forecast.minTemp.toInt()}°',
-            style: TextStyle(
-              fontSize: isSmallScreen ? 10 : 12,
-              color: CropFreshColors.onBackground60Secondary,
+          const SizedBox(height: 2), // * Reduced spacing
+          Flexible(
+            child: Text(
+              '${forecast.maxTemp.toInt()}°',
+              style: TextStyle(
+                fontSize: isSmallScreen ? 11 : 13, // * Slightly smaller text
+                fontWeight: FontWeight.w600,
+                color: CropFreshColors.onBackground60,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              '${forecast.minTemp.toInt()}°',
+              style: TextStyle(
+                fontSize: isSmallScreen ? 9 : 11, // * Slightly smaller text
+                color: CropFreshColors.onBackground60Secondary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -538,7 +572,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
   }
 
   Widget _buildLoadingWeatherContent(bool isSmallScreen) {
-    return Container(
+    return SizedBox(
       height: isSmallScreen ? 120 : 150,
       child: const Center(child: CircularProgressIndicator()),
     );
@@ -608,8 +642,7 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
       children: [
         ...marketData.prices
             .take(4)
-            .map((price) => _buildPriceItem(price, isSmallScreen))
-            .toList(),
+            .map((price) => _buildPriceItem(price, isSmallScreen)),
 
         if (marketData.prices.length > 4)
           TextButton(
@@ -789,12 +822,9 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
 
     return Column(
       children: [
-        ...recentNotifications
-            .map(
-              (notification) =>
-                  _buildNotificationItem(notification, isSmallScreen),
-            )
-            .toList(),
+        ...recentNotifications.map(
+          (notification) => _buildNotificationItem(notification, isSmallScreen),
+        ),
 
         if (notifications.length > 3)
           TextButton(
@@ -1262,13 +1292,43 @@ class _DashboardScreenV2State extends ConsumerState<DashboardScreenV2> {
   }
 
   void _handleQuickAction(QuickAction action) {
-    // TODO: Implement navigation to respective screens
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${action.title} coming soon!'),
-        backgroundColor: CropFreshColors.green30Primary,
-      ),
-    );
+    // * Handle specific quick actions with navigation
+    switch (action.title) {
+      case 'My Orders':
+      case 'Orders':
+        // * Navigate to My Orders tab (index 2 in adjusted navigation)
+        _navigateToTab(2);
+        break;
+      case 'Profile':
+      case 'Account':
+        // * Navigate to Profile tab (index 3 in adjusted navigation)
+        _navigateToTab(3);
+        break;
+      default:
+        // * Show coming soon message for other actions
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${action.title} coming soon!'),
+            backgroundColor: CropFreshColors.green30Primary,
+          ),
+        );
+    }
+  }
+
+  /// * Navigate to specific tab in parent navigation
+  void _navigateToTab(int tabIndex) {
+    if (widget.onNavigateToTab != null) {
+      // * Use callback to communicate with parent navigation
+      widget.onNavigateToTab!(tabIndex);
+    } else {
+      // * Fallback: show message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please use bottom navigation to access this feature'),
+          backgroundColor: CropFreshColors.green30Primary,
+        ),
+      );
+    }
   }
 
   void _showNotificationPanel() {

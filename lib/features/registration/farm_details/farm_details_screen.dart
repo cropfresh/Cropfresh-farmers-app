@@ -1,15 +1,17 @@
 // ===================================================================
 // * FARM DETAILS SCREEN
-// * Purpose: Comprehensive farm information collection screen
-// * Features: GPS location, land area, ownership, crops, irrigation
-// * UI Components: Map integration, multi-select crops, form validation
-// * Security Level: HIGH - Handles sensitive farm data
+// * Purpose: Complete farm details collection interface
+// * Features: Location picker, crop selection, land area input
+// * Security Level: MEDIUM - Handles farmer's farm data
 // ===================================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:cropfresh_farmers_app/core/theme/app_theme.dart';
+import '../../login/models/user_profile.dart';
+import '../../navigation/main_navigation.dart';
 import 'farm_details_controller.dart';
 import 'models/farm_details.dart';
-import 'models/crop.dart';
 
 /// * FARM DETAILS SCREEN
 /// * Main screen for collecting detailed farm information
@@ -720,8 +722,8 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Navigate to main app or dashboard
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  // * Navigate to main navigation wrapper with dashboard
+                  _navigateToMainApp();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade700,
@@ -861,5 +863,35 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       _controller.submitFarmDetails();
     }
+  }
+
+  /// * Navigate to main app with navigation wrapper
+  void _navigateToMainApp() {
+    // * Create user profile from registration data
+    final userProfile = UserProfile(
+      phoneNumber: widget.phoneNumber,
+      fullName: widget.fullName,
+      farmerId: widget.farmerId,
+      experienceLevel: widget.experienceLevel,
+      lastLoginTime: DateTime.now(),
+      landArea: _controller.landArea,
+      ownershipType: _controller.ownershipType,
+      primaryCrops: _controller.selectedCrops.isNotEmpty
+          ? _controller.selectedCrops.map((crop) => crop.name).toList()
+          : null,
+      irrigationType: _controller.irrigationType,
+      irrigationSource: _controller.irrigationSource,
+      address: _controller.formattedManualAddress.isNotEmpty
+          ? _controller.formattedManualAddress
+          : null,
+    );
+
+    // * Navigate to main navigation wrapper and clear stack
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => MainNavigationWrapper(userProfile: userProfile),
+      ),
+      (route) => false, // Clear entire navigation stack
+    );
   }
 }
