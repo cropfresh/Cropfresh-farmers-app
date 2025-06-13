@@ -1,7 +1,7 @@
 // ===================================================================
 // * MARKETPLACE SCREEN
 // * Purpose: Central place for farmers to buy agri-inputs and nursery saplings
-// * Features: Search, filter, categories, product listings
+// * Features: Search, filter, categories, product listings with Material 3 design
 // * State Management: StatefulWidget
 // * Security Level: MEDIUM - User-specific purchasing data
 // ===================================================================
@@ -10,8 +10,40 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/colors.dart';
 import '../../login/models/user_profile.dart';
 
+/// * PRODUCT MODEL
+/// * Represents a marketplace product with complete details
+class MarketplaceProduct {
+  final String id;
+  final String name;
+  final String category;
+  final double price;
+  final String description;
+  final String imageUrl;
+  final double rating;
+  final int reviewCount;
+  final String vendor;
+  final bool isInStock;
+  final String specifications;
+  final List<String> benefits;
+
+  const MarketplaceProduct({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.price,
+    required this.description,
+    required this.imageUrl,
+    required this.rating,
+    required this.reviewCount,
+    required this.vendor,
+    required this.isInStock,
+    required this.specifications,
+    required this.benefits,
+  });
+}
+
 /// * MARKETPLACE SCREEN
-/// * Searchable and filterable view of agri-inputs and nursery saplings
+/// * Material 3 design with enhanced card layouts and detailed views
 class MarketplaceScreen extends StatefulWidget {
   final UserProfile userProfile;
 
@@ -118,18 +150,17 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
 
           const SizedBox(height: 16),
 
-          // * Search bar
+          // * Search bar with Material 3 design
           Container(
             decoration: BoxDecoration(
               color: CropFreshColors.background60Secondary,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: CropFreshColors.onBackground60Tertiary.withValues(
-                  alpha: 0.3, // ! IMPROVED: Better border visibility
+                  alpha: 0.3,
                 ),
               ),
               boxShadow: [
-                // ! IMPROVED: Subtle shadow for better definition
                 BoxShadow(
                   color: CropFreshColors.onBackground60Tertiary.withValues(
                     alpha: 0.05,
@@ -142,7 +173,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
             child: TextField(
               controller: _searchController,
               style: TextStyle(
-                // ! IMPROVED: Better text style for search input
                 color: CropFreshColors.onBackground60,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -151,27 +181,26 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
                 hintText: 'Search products...',
                 hintStyle: TextStyle(
                   color: CropFreshColors.onBackground60Tertiary,
-                  fontSize: 16, // ! IMPROVED: Consistent font size
+                  fontSize: 16,
                   fontWeight: FontWeight.w400,
                 ),
                 prefixIcon: Icon(
                   Icons.search,
-                  color: CropFreshColors
-                      .onBackground60Secondary, // ! IMPROVED: Better icon color
-                  size: 22, // ! IMPROVED: Consistent icon size
+                  color: CropFreshColors.onBackground60Secondary,
+                  size: 22,
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
                     Icons.filter_list,
                     color: CropFreshColors.green30Primary,
-                    size: 22, // ! IMPROVED: Consistent icon size
+                    size: 22,
                   ),
                   onPressed: _showFilterSheet,
                 ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 14, // ! IMPROVED: Better padding for text alignment
+                  vertical: 14,
                 ),
               ),
             ),
@@ -201,7 +230,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
     );
   }
 
-  /// * Build product grid
+  /// * Build product grid with Material 3 design
   Widget _buildProductGrid(bool isSmallScreen) {
     return TabBarView(
       controller: _tabController,
@@ -212,19 +241,15 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
             padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: isSmallScreen
-                  ? 0.85
-                  : 0.80, // ! IMPROVED: Better aspect ratio for text space
-              crossAxisSpacing: isSmallScreen
-                  ? 12
-                  : 16, // ! IMPROVED: Responsive spacing
-              mainAxisSpacing: isSmallScreen
-                  ? 12
-                  : 16, // ! IMPROVED: Responsive spacing
+              // ! FIXED: Adjusted aspect ratio to prevent overflow
+              childAspectRatio: isSmallScreen ? 0.68 : 0.65,
+              crossAxisSpacing: isSmallScreen ? 16 : 20,
+              mainAxisSpacing: isSmallScreen ? 16 : 20,
             ),
             itemCount: _getProductCount(category),
             itemBuilder: (context, index) {
-              return _buildProductCard(category, index, isSmallScreen);
+              final product = _getProduct(category, index);
+              return _buildMaterial3ProductCard(product, isSmallScreen);
             },
           ),
         );
@@ -232,151 +257,561 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
     );
   }
 
-  /// * Build individual product card
-  Widget _buildProductCard(String category, int index, bool isSmallScreen) {
-    return Container(
-      decoration: BoxDecoration(
-        color: CropFreshColors.surface60Primary,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: CropFreshColors.onBackground60Tertiary.withValues(
-              alpha: 0.1,
-            ),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+  /// * Build Material 3 enhanced product card
+  Widget _buildMaterial3ProductCard(
+    MarketplaceProduct product,
+    bool isSmallScreen,
+  ) {
+    return Card(
+      // ! MATERIAL 3: Using Material 3 Card widget with proper elevation
+      elevation: 2,
+      shadowColor: CropFreshColors.onBackground60Tertiary.withValues(
+        alpha: 0.15,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // * Product image
-          Expanded(
-            flex: isSmallScreen
-                ? 2
-                : 2, // ! FIX: Reduced image space to give more room for text
-            child: Container(
-              decoration: BoxDecoration(
-                color: CropFreshColors.background60Secondary,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-              ),
-              child: Center(
-                child: Icon(
-                  _getCategoryIcon(category),
-                  size: isSmallScreen
-                      ? 32
-                      : 36, // ! FIX: Slightly smaller icons to balance
-                  color: CropFreshColors.green30Primary,
-                ),
-              ),
+      surfaceTintColor: CropFreshColors.green30Primary.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          16,
+        ), // ! MATERIAL 3: Larger corner radius
+      ),
+      child: InkWell(
+        // ! IMPROVED: Full card tap area with Material 3 ripple
+        onTap: () => _showProductDetails(product),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                CropFreshColors.surface60Primary,
+                CropFreshColors.surface60Primary.withValues(alpha: 0.95),
+              ],
             ),
           ),
-
-          // * Product details
-          Expanded(
-            flex: isSmallScreen
-                ? 4
-                : 3, // ! FIX: More space for price and button section
-            child: Container(
-              padding: EdgeInsets.all(isSmallScreen ? 10 : 14),
-              decoration: BoxDecoration(
-                color: CropFreshColors.background60Primary,
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // * Product image with Material 3 styling
+              Expanded(
+                flex: 2,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: CropFreshColors.background60Secondary,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        CropFreshColors.green30Primary.withValues(alpha: 0.1),
+                        CropFreshColors.orange10Primary.withValues(alpha: 0.1),
+                      ],
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      // * Product icon/image
+                      Center(
+                        child: Icon(
+                          _getCategoryIcon(product.category),
+                          size: isSmallScreen ? 40 : 48,
+                          color: CropFreshColors.green30Primary,
+                        ),
+                      ),
+                      // * Stock status badge
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: product.isInStock
+                                ? CropFreshColors.green30Primary
+                                : CropFreshColors.onBackground60Tertiary,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            product.isInStock ? 'In Stock' : 'Out of Stock',
+                            style: TextStyle(
+                              color: product.isInStock
+                                  ? CropFreshColors.onGreen30
+                                  : CropFreshColors.surface60Primary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // * Product name
-                  Flexible(
-                    flex: 2,
-                    child: Text(
-                      _getProductName(category, index),
-                      style: TextStyle(
-                        fontSize: isSmallScreen ? 14 : 16,
-                        fontWeight: FontWeight.w600,
-                        color: CropFreshColors.onBackground60,
-                        height: 1.2,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
 
-                  SizedBox(height: isSmallScreen ? 4 : 6),
-
-                  // * Price
-                  Flexible(
-                    flex: 1,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: CropFreshColors.green30Primary.withValues(
-                          alpha: 0.1,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        _getProductPrice(index),
-                        style: TextStyle(
-                          fontSize: isSmallScreen ? 16 : 18,
-                          fontWeight: FontWeight.w800,
-                          color: CropFreshColors.green30Primary,
-                          letterSpacing: 0.5,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: isSmallScreen ? 6 : 8),
-
-                  // * Add to cart button
-                  Flexible(
-                    flex: 1,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: isSmallScreen ? 36 : 40,
-                      child: ElevatedButton(
-                        onPressed: () => _addToCart(category, index),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: CropFreshColors.orange10Primary,
-                          foregroundColor: CropFreshColors.onOrange10,
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+              // * Product details section
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // * Product name and rating
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product.name,
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 12 : 14,
+                              fontWeight: FontWeight.w600,
+                              color: CropFreshColors.onBackground60,
+                              height: 1.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          padding: EdgeInsets.symmetric(
-                            vertical: isSmallScreen ? 6 : 8,
-                            horizontal: 4,
+                          const SizedBox(height: 2),
+                          // * Rating and vendor
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star,
+                                size: 12,
+                                color: CropFreshColors.orange10Primary,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${product.rating}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                  color:
+                                      CropFreshColors.onBackground60Secondary,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '(${product.reviewCount})',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  color: CropFreshColors.onBackground60Tertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      // * Price with Material 3 styling
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: CropFreshColors.green30Primary.withValues(
+                            alpha: 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: CropFreshColors.green30Primary.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                         ),
                         child: Text(
-                          'Add to Cart',
+                          '₹${product.price.toStringAsFixed(0)}',
                           style: TextStyle(
-                            fontSize: isSmallScreen ? 12 : 13,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.3,
+                            fontSize: isSmallScreen ? 14 : 16,
+                            fontWeight: FontWeight.w700,
+                            color: CropFreshColors.green30Primary,
+                            letterSpacing: 0.5,
                           ),
-                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
+                      // * Add to cart button with Material 3 styling
+                      SizedBox(
+                        width: double.infinity,
+                        height: isSmallScreen ? 32 : 36,
+                        child: FilledButton(
+                          onPressed: product.isInStock
+                              ? () => _addToCart(product)
+                              : null,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: CropFreshColors.orange10Primary,
+                            foregroundColor: CropFreshColors.onOrange10,
+                            disabledBackgroundColor: CropFreshColors
+                                .onBackground60Tertiary
+                                .withValues(alpha: 0.3),
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            product.isInStock ? 'Add to Cart' : 'Out of Stock',
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 10 : 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// * Show detailed product information modal
+  void _showProductDetails(MarketplaceProduct product) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: CropFreshColors.background60Primary,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: _buildProductDetailView(product, scrollController),
+        ),
+      ),
+    );
+  }
+
+  /// * Build detailed product view
+  Widget _buildProductDetailView(
+    MarketplaceProduct product,
+    ScrollController scrollController,
+  ) {
+    return SingleChildScrollView(
+      controller: scrollController,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // * Drag handle
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: CropFreshColors.onBackground60Tertiary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // * Product header
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // * Product image
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: CropFreshColors.background60Secondary,
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            CropFreshColors.green30Primary.withValues(
+                              alpha: 0.1,
+                            ),
+                            CropFreshColors.orange10Primary.withValues(
+                              alpha: 0.1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      child: Icon(
+                        _getCategoryIcon(product.category),
+                        size: 60,
+                        color: CropFreshColors.green30Primary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // * Product info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product.name,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: CropFreshColors.onBackground60,
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'by ${product.vendor}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: CropFreshColors.onBackground60Secondary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // * Rating
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star,
+                                size: 18,
+                                color: CropFreshColors.orange10Primary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${product.rating}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: CropFreshColors.onBackground60,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '(${product.reviewCount} reviews)',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: CropFreshColors.onBackground60Tertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // * Price
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: CropFreshColors.green30Primary.withValues(
+                                alpha: 0.12,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: CropFreshColors.green30Primary
+                                    .withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Text(
+                              '₹${product.price.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: CropFreshColors.green30Primary,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // * Description
+                _buildDetailSection('Description', product.description),
+
+                const SizedBox(height: 20),
+
+                // * Specifications
+                _buildDetailSection('Specifications', product.specifications),
+
+                const SizedBox(height: 20),
+
+                // * Benefits
+                _buildBenefitsSection(product.benefits),
+
+                const SizedBox(height: 24),
+
+                // * Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: CropFreshColors.green30Primary,
+                          side: BorderSide(
+                            color: CropFreshColors.green30Primary,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: const Text('Close'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: FilledButton(
+                        onPressed: product.isInStock
+                            ? () {
+                                _addToCart(product);
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: CropFreshColors.orange10Primary,
+                          foregroundColor: CropFreshColors.onOrange10,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: Text(
+                          product.isInStock ? 'Add to Cart' : 'Out of Stock',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// * Build detail section
+  Widget _buildDetailSection(String title, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: CropFreshColors.onBackground60,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: CropFreshColors.surface60Primary,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: CropFreshColors.onBackground60Tertiary.withValues(
+                alpha: 0.2,
+              ),
+            ),
+          ),
+          child: Text(
+            content,
+            style: TextStyle(
+              fontSize: 14,
+              color: CropFreshColors.onBackground60Secondary,
+              height: 1.5,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// * Build benefits section
+  Widget _buildBenefitsSection(List<String> benefits) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Key Benefits',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: CropFreshColors.onBackground60,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: CropFreshColors.surface60Primary,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: CropFreshColors.onBackground60Tertiary.withValues(
+                alpha: 0.2,
+              ),
+            ),
+          ),
+          child: Column(
+            children: benefits
+                .map(
+                  (benefit) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          size: 16,
+                          color: CropFreshColors.green30Primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            benefit,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: CropFreshColors.onBackground60Secondary,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -404,30 +839,127 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
 
   /// * Get product count for category
   int _getProductCount(String category) {
-    // * Mock data - replace with actual data
     return category == 'All' ? 20 : 8;
   }
 
-  /// * Get product name
-  String _getProductName(String category, int index) {
-    // * Mock data - replace with actual data
-    final baseNames = {
-      'Seeds': ['Premium Rice Seeds', 'Wheat Seeds', 'Corn Seeds'],
-      'Fertilizers': ['NPK Fertilizer', 'Organic Compost', 'Urea'],
-      'Pesticides': ['Insecticide', 'Herbicide', 'Fungicide'],
-      'Tools': ['Garden Spade', 'Pruning Shears', 'Watering Can'],
-      'Saplings': ['Mango Sapling', 'Apple Sapling', 'Orange Sapling'],
-    };
-
-    final names = baseNames[category] ?? ['Product'];
-    return names[index % names.length];
+  /// * Get product with mock data
+  MarketplaceProduct _getProduct(String category, int index) {
+    final products = _getMockProducts(category);
+    return products[index % products.length];
   }
 
-  /// * Get product price
-  String _getProductPrice(int index) {
-    // * Mock data - replace with actual data
-    final prices = ['₹299', '₹499', '₹799', '₹1,299', '₹599'];
-    return prices[index % prices.length];
+  /// * Get mock products data
+  List<MarketplaceProduct> _getMockProducts(String category) {
+    final baseProducts = {
+      'Seeds': [
+        MarketplaceProduct(
+          id: 'seed_001',
+          name: 'Premium Basmati Rice Seeds',
+          category: 'Seeds',
+          price: 299.0,
+          description:
+              'High-yield basmati rice seeds with excellent grain quality and aroma. Suitable for all soil types and weather conditions.',
+          imageUrl: '',
+          rating: 4.5,
+          reviewCount: 156,
+          vendor: 'AgroSeed Co.',
+          isInStock: true,
+          specifications:
+              'Variety: Pusa Basmati 1121\nYield: 45-50 quintals/hectare\nMaturity: 145-150 days\nSeed Rate: 20-25 kg/hectare',
+          benefits: [
+            'High yielding variety with superior grain quality',
+            'Disease resistant and drought tolerant',
+            'Long grain with excellent cooking properties',
+            'Premium market price for quality produce',
+          ],
+        ),
+        MarketplaceProduct(
+          id: 'seed_002',
+          name: 'Hybrid Wheat Seeds',
+          category: 'Seeds',
+          price: 450.0,
+          description:
+              'Advanced hybrid wheat seeds with high protein content and excellent disease resistance.',
+          imageUrl: '',
+          rating: 4.3,
+          reviewCount: 203,
+          vendor: 'CropTech Seeds',
+          isInStock: true,
+          specifications:
+              'Variety: HD-3086\nYield: 55-60 quintals/hectare\nMaturity: 120-125 days\nSeed Rate: 40-50 kg/hectare',
+          benefits: [
+            'High protein content (12-14%)',
+            'Excellent lodging resistance',
+            'Suitable for late sowing conditions',
+            'Good market demand',
+          ],
+        ),
+      ],
+      'Fertilizers': [
+        MarketplaceProduct(
+          id: 'fert_001',
+          name: 'NPK 19:19:19 Fertilizer',
+          category: 'Fertilizers',
+          price: 850.0,
+          description:
+              'Balanced NPK fertilizer perfect for all crops during vegetative growth stage.',
+          imageUrl: '',
+          rating: 4.7,
+          reviewCount: 89,
+          vendor: 'NutriGrow',
+          isInStock: true,
+          specifications:
+              'NPK Ratio: 19:19:19\nPackage: 50kg bag\nWater Soluble: Yes\nApplication: Foliar/Drip irrigation',
+          benefits: [
+            'Balanced nutrition for optimal growth',
+            'Water soluble for easy application',
+            'Improves yield and quality',
+            'Cost-effective solution',
+          ],
+        ),
+      ],
+      'Tools': [
+        MarketplaceProduct(
+          id: 'tool_001',
+          name: 'Professional Garden Spade',
+          category: 'Tools',
+          price: 1200.0,
+          description:
+              'Heavy-duty garden spade with ergonomic handle and sharp steel blade.',
+          imageUrl: '',
+          rating: 4.6,
+          reviewCount: 45,
+          vendor: 'ToolMaster',
+          isInStock: false,
+          specifications:
+              'Material: Carbon Steel\nHandle: Fiberglass\nWeight: 1.5kg\nWarranty: 2 years',
+          benefits: [
+            'Durable carbon steel construction',
+            'Ergonomic design reduces fatigue',
+            'Sharp blade for easy digging',
+            'Long-lasting with proper care',
+          ],
+        ),
+      ],
+    };
+
+    return baseProducts[category] ??
+        [
+          MarketplaceProduct(
+            id: 'default_001',
+            name: 'Sample Product',
+            category: category,
+            price: 500.0,
+            description: 'Sample product description.',
+            imageUrl: '',
+            rating: 4.0,
+            reviewCount: 10,
+            vendor: 'Sample Vendor',
+            isInStock: true,
+            specifications: 'Sample specifications',
+            benefits: ['Sample benefit'],
+          ),
+        ];
   }
 
   /// * Show filter sheet
@@ -453,7 +985,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
               ),
             ),
             const SizedBox(height: 20),
-            // * Filter options would go here
             Text(
               'Filter options coming soon...',
               style: TextStyle(color: CropFreshColors.onBackground60Secondary),
@@ -466,12 +997,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
   }
 
   /// * Add product to cart
-  void _addToCart(String category, int index) {
+  void _addToCart(MarketplaceProduct product) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${_getProductName(category, index)} added to cart'),
+        content: Text('${product.name} added to cart'),
         backgroundColor: CropFreshColors.green30Primary,
         duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
