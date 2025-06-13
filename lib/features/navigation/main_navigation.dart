@@ -1,25 +1,24 @@
 // ===================================================================
-// * MAIN NAVIGATION WRAPPER
-// * Purpose: Central navigation with bottom nav and floating action button
-// * Features: Home, Marketplace, Sell FAB, My Orders, Profile, Services
-// * State Management: StatefulWidget with PageController
+// * MAIN NAVIGATION WRAPPER - MATERIAL 3 EDITION
+// * Purpose: Central navigation with Material 3 NavigationBar design
+// * Features: Home, Marketplace, Cart, Orders, Profile, Sell FAB
+// * State Management: StatefulWidget with Navigation 3 principles
 // * Security Level: LOW - Navigation only
 // ===================================================================
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/theme/colors.dart';
 import '../dashboard/dashboard_screen_v2.dart';
 import '../login/models/user_profile.dart';
 import 'screens/marketplace_screen.dart';
 import 'screens/my_orders_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/services_screen.dart';
 import 'screens/sell_screen.dart';
+import 'screens/cart_screen.dart'; // * NEW: Cart screen
 
-/// * MAIN NAVIGATION CONTROLLER
-/// * Handles bottom navigation with floating action button
-/// * Manages page state and navigation between main sections
+/// * MAIN NAVIGATION CONTROLLER - MATERIAL 3
+/// * Implements Material 3 NavigationBar with cart and enhanced UX
+/// * Features: Dynamic badges, haptic feedback, smooth animations
 class MainNavigationWrapper extends StatefulWidget {
   final UserProfile userProfile;
 
@@ -32,23 +31,29 @@ class MainNavigationWrapper extends StatefulWidget {
 class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     with TickerProviderStateMixin {
   // ============================================================================
-  // * NAVIGATION STATE
+  // * NAVIGATION STATE - MATERIAL 3
   // ============================================================================
 
-  /// * Current selected tab index
+  /// * Current selected destination index
   int _currentIndex = 0;
 
-  /// * Page controller for smooth navigation
+  /// * Page controller for smooth navigation transitions
   late PageController _pageController;
 
-  /// * Animation controller for FAB
+  /// * Animation controller for FAB entrance
   late AnimationController _fabAnimationController;
 
-  /// * FAB scale animation
+  /// * FAB scale animation with Material 3 curves
   late Animation<double> _fabScaleAnimation;
 
-  /// * Tab screens list
+  /// * Navigation destination screens
   late List<Widget> _screens;
+
+  /// * Cart item count for badge display
+  int _cartItemCount = 3; // * TODO: Connect to cart state management
+
+  /// * Orders notification count
+  final int _ordersNotificationCount = 2; // * TODO: Connect to orders state
 
   @override
   void initState() {
@@ -58,44 +63,53 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     _setupScreens();
   }
 
-  /// * Initialize navigation components
+  /// * Initialize navigation components with Material 3 patterns
   void _initializeNavigation() {
     _pageController = PageController(initialPage: _currentIndex);
   }
 
-  /// * Initialize animations
+  /// * Initialize animations with Material 3 motion curves
   void _initializeAnimations() {
     _fabAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400), // * Extended for smoothness
       vsync: this,
     );
 
     _fabScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _fabAnimationController,
-        curve: Curves.elasticOut,
+        curve: Curves.easeOutBack, // * Material 3 motion curve
       ),
     );
 
-    _fabAnimationController.forward();
+    // * Delayed FAB entrance for better UX
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _fabAnimationController.forward();
+    });
   }
 
-  /// * Setup screens for navigation
+  /// * Setup screens for Material 3 navigation
   void _setupScreens() {
     _screens = [
-      // * Home: Dashboard with market prices and buy orders
+      // * Home: Enhanced dashboard with Material 3 design
       DashboardScreenV2(
         userProfile: widget.userProfile,
         onNavigateToTab: _onTabSelected,
       ),
 
-      // * Marketplace: Agri-inputs and nursery saplings
+      // * Marketplace: Agri-inputs with Material 3 styling
       MarketplaceScreen(userProfile: widget.userProfile),
 
-      // * My Orders: Sales and purchases tracking
+      // * Cart: NEW - Shopping cart with Material 3 design
+      CartScreen(
+        userProfile: widget.userProfile,
+        onItemCountChanged: _updateCartCount,
+      ),
+
+      // * Orders: Enhanced order tracking
       MyOrdersScreen(userProfile: widget.userProfile),
 
-      // * Profile: Account info and settings
+      // * Profile: Account with Material 3 components
       ProfileScreen(userProfile: widget.userProfile),
     ];
   }
@@ -108,57 +122,53 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }
 
   // ============================================================================
-  // * NAVIGATION METHODS
+  // * NAVIGATION METHODS - MATERIAL 3 ENHANCED
   // ============================================================================
 
-  /// * Handle tab selection
+  /// * Handle destination selection with Material 3 navigation patterns
   void _onTabSelected(int index) {
-    if (index == 2) {
-      // * Special handling for Sell tab (FAB)
+    // * Special handling for FAB (index 5 represents Sell action)
+    if (index == 5) {
       _showSellScreen();
       return;
     }
 
-    // * Map navigation indices to screen indices
-    int screenIndex;
-    if (index < 2) {
-      // * Home (0) and Marketplace (1) map directly
-      screenIndex = index;
-    } else {
-      // * Orders (3) maps to screen index 2, Profile (4) maps to screen index 3
-      screenIndex = index - 1;
-    }
+    // * Material 3 haptic feedback for navigation
+    HapticFeedback.selectionClick();
 
-    if (_currentIndex != screenIndex) {
+    if (_currentIndex != index) {
       setState(() {
-        _currentIndex = screenIndex;
+        _currentIndex = index;
       });
 
       _pageController.animateToPage(
-        screenIndex,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        index,
+        duration: const Duration(milliseconds: 350), // * Material 3 timing
+        curve: Curves.easeInOutCubicEmphasized, // * Material 3 curve
       );
     }
   }
 
-  /// * Show sell screen as modal
+  /// * Show sell screen with Material 3 modal presentation
   void _showSellScreen() {
-    // * Haptic feedback for important action
+    // * Enhanced haptic feedback for primary action
     HapticFeedback.mediumImpact();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      useSafeArea: true, // * Material 3 safe area handling
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.9,
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: CropFreshColors.background60Primary,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(28), // * Material 3 corner radius
+            ),
           ),
           child: SellScreen(
             userProfile: widget.userProfile,
@@ -169,14 +179,25 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     );
   }
 
+  /// * Update cart item count for badge
+  void _updateCartCount(int newCount) {
+    if (mounted) {
+      setState(() {
+        _cartItemCount = newCount;
+      });
+    }
+  }
+
   // ============================================================================
-  // * BUILD METHODS
+  // * BUILD METHODS - MATERIAL 3 DESIGN
   // ============================================================================
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: CropFreshColors.background60Primary,
+      backgroundColor: colorScheme.surfaceContainerLowest,
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
@@ -184,151 +205,128 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
             _currentIndex = index;
           });
         },
-        children: _screens, // All 4 screens: Home, Market, Orders, Profile
+        children: _screens,
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
-      floatingActionButton: _buildFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _buildMaterial3NavigationBar(colorScheme),
+      floatingActionButton: _buildMaterial3FAB(colorScheme),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
     );
   }
 
-  /// * Build custom bottom navigation bar
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: CropFreshColors.surface60Primary,
-        boxShadow: [
-          BoxShadow(
-            color: CropFreshColors.onBackground60Tertiary.withValues(
-              alpha: 0.1,
-            ),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+  /// * Build Material 3 NavigationBar
+  Widget _buildMaterial3NavigationBar(ColorScheme colorScheme) {
+    return NavigationBar(
+      selectedIndex: _currentIndex,
+      onDestinationSelected: _onTabSelected,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: colorScheme.surfaceTint,
+      indicatorColor: colorScheme.secondaryContainer,
+      height: 80, // * Material 3 recommended height
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      animationDuration: const Duration(
+        milliseconds: 400,
+      ), // * Smooth transitions
+      destinations: [
+        // * Home Destination
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined, size: 24),
+          selectedIcon: Icon(
+            Icons.home,
+            size: 24,
+            color: colorScheme.onSecondaryContainer,
           ),
-        ],
-      ),
-      child: SafeArea(
-        child: Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // * Home Tab
-              _buildNavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: 'Home',
-                index: 0,
-                isActive: _currentIndex == 0,
-              ),
+          label: 'Home',
+        ),
 
-              // * Marketplace Tab
-              _buildNavItem(
-                icon: Icons.storefront_outlined,
-                activeIcon: Icons.storefront,
-                label: 'Market',
-                index: 1,
-                isActive: _currentIndex == 1,
-              ),
-
-              // * Spacer for FAB
-              const SizedBox(width: 40),
-
-              // * My Orders Tab
-              _buildNavItem(
-                icon: Icons.list_alt_outlined,
-                activeIcon: Icons.list_alt,
-                label: 'Orders',
-                index: 3,
-                isActive: _currentIndex == 2,
-              ),
-
-              // * Profile Tab
-              _buildNavItem(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: 'Profile',
-                index: 4,
-                isActive: _currentIndex == 3,
-              ),
-            ],
+        // * Marketplace Destination
+        NavigationDestination(
+          icon: Icon(Icons.storefront_outlined, size: 24),
+          selectedIcon: Icon(
+            Icons.storefront,
+            size: 24,
+            color: colorScheme.onSecondaryContainer,
           ),
+          label: 'Market',
         ),
-      ),
+
+        // * Cart Destination with Badge
+        NavigationDestination(
+          icon: Badge.count(
+            count: _cartItemCount,
+            isLabelVisible: _cartItemCount > 0,
+            backgroundColor: colorScheme.error,
+            textColor: colorScheme.onError,
+            child: Icon(Icons.shopping_cart_outlined, size: 24),
+          ),
+          selectedIcon: Badge.count(
+            count: _cartItemCount,
+            isLabelVisible: _cartItemCount > 0,
+            backgroundColor: colorScheme.error,
+            textColor: colorScheme.onError,
+            child: Icon(
+              Icons.shopping_cart,
+              size: 24,
+              color: colorScheme.onSecondaryContainer,
+            ),
+          ),
+          label: 'Cart',
+        ),
+
+        // * Orders Destination with Badge
+        NavigationDestination(
+          icon: Badge.count(
+            count: _ordersNotificationCount,
+            isLabelVisible: _ordersNotificationCount > 0,
+            backgroundColor: colorScheme.primary,
+            textColor: colorScheme.onPrimary,
+            child: Icon(Icons.receipt_long_outlined, size: 24),
+          ),
+          selectedIcon: Badge.count(
+            count: _ordersNotificationCount,
+            isLabelVisible: _ordersNotificationCount > 0,
+            backgroundColor: colorScheme.primary,
+            textColor: colorScheme.onPrimary,
+            child: Icon(
+              Icons.receipt_long,
+              size: 24,
+              color: colorScheme.onSecondaryContainer,
+            ),
+          ),
+          label: 'Orders',
+        ),
+
+        // * Profile Destination
+        NavigationDestination(
+          icon: Icon(Icons.person_outline, size: 24),
+          selectedIcon: Icon(
+            Icons.person,
+            size: 24,
+            color: colorScheme.onSecondaryContainer,
+          ),
+          label: 'Profile',
+        ),
+      ],
     );
   }
 
-  /// * Build individual navigation item
-  Widget _buildNavItem({
-    required IconData icon,
-    required IconData activeIcon,
-    required String label,
-    required int index,
-    required bool isActive,
-  }) {
-    return GestureDetector(
-      onTap: () => _onTabSelected(index),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-        constraints: const BoxConstraints(minHeight: 50, maxHeight: 55),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isActive ? activeIcon : icon,
-              color: isActive
-                  ? CropFreshColors.green30Primary
-                  : CropFreshColors.onBackground60Tertiary,
-              size: 22,
-            ),
-            const SizedBox(height: 2),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                  color: isActive
-                      ? CropFreshColors.green30Primary
-                      : CropFreshColors.onBackground60Tertiary,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// * Build floating action button for Sell
-  Widget _buildFloatingActionButton() {
+  /// * Build Material 3 Extended FAB
+  Widget _buildMaterial3FAB(ColorScheme colorScheme) {
     return ScaleTransition(
       scale: _fabScaleAnimation,
-      child: FloatingActionButton(
+      child: FloatingActionButton.extended(
         onPressed: _showSellScreen,
-        backgroundColor: CropFreshColors.orange10Primary,
-        foregroundColor: CropFreshColors.onOrange10,
-        elevation: 8,
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                CropFreshColors.orange10Primary,
-                CropFreshColors.orange10Vibrant,
-              ],
-            ),
-          ),
-          child: const Icon(Icons.add, size: 28),
+        backgroundColor: colorScheme.primaryContainer,
+        foregroundColor: colorScheme.onPrimaryContainer,
+        elevation: 3, // * Material 3 elevation
+        highlightElevation: 6,
+        icon: const Icon(Icons.add_business, size: 24),
+        label: const Text(
+          'Sell',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
+        extendedPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 12,
         ),
       ),
     );
