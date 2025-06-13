@@ -27,8 +27,7 @@ class CartScreen extends StatefulWidget {
   State<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends State<CartScreen>
-    with SingleTickerProviderStateMixin {
+class _CartScreenState extends State<CartScreen> {
   // ============================================================================
   // * CART STATE MANAGEMENT
   // ============================================================================
@@ -36,17 +35,10 @@ class _CartScreenState extends State<CartScreen>
   /// * Cart items list (mock data for now)
   late List<CartItem> _cartItems;
 
-  /// * Animation controller for smooth transitions
-  late AnimationController _animationController;
-
-  /// * Animation for cart updates
-  late Animation<double> _slideAnimation;
-
   @override
   void initState() {
     super.initState();
     _initializeCart();
-    _initializeAnimations();
   }
 
   /// * Initialize cart with sample data
@@ -85,50 +77,32 @@ class _CartScreenState extends State<CartScreen>
     _updateCartCount();
   }
 
-  /// * Initialize animations with Material 3 curves
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOutCubicEmphasized,
-      ),
-    );
-
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
   // ============================================================================
   // * CART OPERATIONS
   // ============================================================================
 
   /// * Update item quantity
   void _updateQuantity(String itemId, int newQuantity) {
-    setState(() {
-      final itemIndex = _cartItems.indexWhere((item) => item.id == itemId);
-      if (itemIndex != -1) {
-        if (newQuantity <= 0) {
-          _cartItems.removeAt(itemIndex);
-        } else {
-          _cartItems[itemIndex] = _cartItems[itemIndex].copyWith(
-            quantity: newQuantity,
-          );
+    try {
+      setState(() {
+        final itemIndex = _cartItems.indexWhere((item) => item.id == itemId);
+        if (itemIndex != -1 && itemIndex < _cartItems.length) {
+          if (newQuantity <= 0) {
+            _cartItems.removeAt(itemIndex);
+          } else {
+            _cartItems[itemIndex] = _cartItems[itemIndex].copyWith(
+              quantity: newQuantity,
+            );
+          }
         }
-      }
-    });
+      });
 
-    _updateCartCount();
-    HapticFeedback.selectionClick();
+      _updateCartCount();
+      HapticFeedback.selectionClick();
+    } catch (e) {
+      // * Handle errors gracefully
+      debugPrint('Error updating quantity: $e');
+    }
   }
 
   /// * Remove item from cart
@@ -215,29 +189,31 @@ class _CartScreenState extends State<CartScreen>
 
   /// * Build cart content
   Widget _buildCartContent(ColorScheme colorScheme) {
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(0, 0.3),
-        end: Offset.zero,
-      ).animate(_slideAnimation),
-      child: FadeTransition(
-        opacity: _slideAnimation,
-        child: ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: _cartItems.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final item = _cartItems[index];
-            return _buildCartItemCard(item, colorScheme);
-          },
-        ),
-      ),
+    if (_cartItems.isEmpty) {
+      return _buildEmptyCart(colorScheme);
+    }
+
+    return ListView.separated(
+      key: const PageStorageKey('cart_items'),
+      padding: const EdgeInsets.all(16),
+      itemCount: _cartItems.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        // * Extra safety check
+        if (index < 0 || index >= _cartItems.length) {
+          return const SizedBox.shrink();
+        }
+
+        final item = _cartItems[index];
+        return _buildCartItemCard(item, colorScheme);
+      },
     );
   }
 
   /// * Build individual cart item card
   Widget _buildCartItemCard(CartItem item, ColorScheme colorScheme) {
     return Card(
+      key: ValueKey(item.id),
       elevation: 1,
       child: Padding(
         padding: const EdgeInsets.all(16),

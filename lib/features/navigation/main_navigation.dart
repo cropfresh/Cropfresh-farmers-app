@@ -13,7 +13,6 @@ import '../login/models/user_profile.dart';
 import 'screens/marketplace_screen.dart';
 import 'screens/my_orders_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/sell_screen.dart';
 import 'screens/cart_screen.dart'; // * NEW: Cart screen
 
 /// * MAIN NAVIGATION CONTROLLER - MATERIAL 3
@@ -28,8 +27,7 @@ class MainNavigationWrapper extends StatefulWidget {
   State<MainNavigationWrapper> createState() => _MainNavigationWrapperState();
 }
 
-class _MainNavigationWrapperState extends State<MainNavigationWrapper>
-    with TickerProviderStateMixin {
+class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   // ============================================================================
   // * NAVIGATION STATE - MATERIAL 3
   // ============================================================================
@@ -40,11 +38,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   /// * Page controller for smooth navigation transitions
   late PageController _pageController;
 
-  /// * Animation controller for FAB entrance
-  late AnimationController _fabAnimationController;
-
-  /// * FAB scale animation with Material 3 curves
-  late Animation<double> _fabScaleAnimation;
+  // * Removed FAB animations
 
   /// * Navigation destination screens
   late List<Widget> _screens;
@@ -59,33 +53,12 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   void initState() {
     super.initState();
     _initializeNavigation();
-    _initializeAnimations();
     _setupScreens();
   }
 
   /// * Initialize navigation components with Material 3 patterns
   void _initializeNavigation() {
     _pageController = PageController(initialPage: _currentIndex);
-  }
-
-  /// * Initialize animations with Material 3 motion curves
-  void _initializeAnimations() {
-    _fabAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 400), // * Extended for smoothness
-      vsync: this,
-    );
-
-    _fabScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _fabAnimationController,
-        curve: Curves.easeOutBack, // * Material 3 motion curve
-      ),
-    );
-
-    // * Delayed FAB entrance for better UX
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) _fabAnimationController.forward();
-    });
   }
 
   /// * Setup screens for Material 3 navigation
@@ -117,7 +90,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   @override
   void dispose() {
     _pageController.dispose();
-    _fabAnimationController.dispose();
     super.dispose();
   }
 
@@ -127,12 +99,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
 
   /// * Handle destination selection with Material 3 navigation patterns
   void _onTabSelected(int index) {
-    // * Special handling for FAB (index 5 represents Sell action)
-    if (index == 5) {
-      _showSellScreen();
-      return;
-    }
-
     // * Material 3 haptic feedback for navigation
     HapticFeedback.selectionClick();
 
@@ -147,36 +113,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
         curve: Curves.easeInOutCubicEmphasized, // * Material 3 curve
       );
     }
-  }
-
-  /// * Show sell screen with Material 3 modal presentation
-  void _showSellScreen() {
-    // * Enhanced haptic feedback for primary action
-    HapticFeedback.mediumImpact();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useSafeArea: true, // * Material 3 safe area handling
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(28), // * Material 3 corner radius
-            ),
-          ),
-          child: SellScreen(
-            userProfile: widget.userProfile,
-            scrollController: scrollController,
-          ),
-        ),
-      ),
-    );
   }
 
   /// * Update cart item count for badge
@@ -208,8 +144,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
         children: _screens,
       ),
       bottomNavigationBar: _buildMaterial3NavigationBar(colorScheme),
-      floatingActionButton: _buildMaterial3FAB(colorScheme),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endContained,
     );
   }
 
@@ -306,29 +240,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
           label: 'Profile',
         ),
       ],
-    );
-  }
-
-  /// * Build Material 3 Extended FAB
-  Widget _buildMaterial3FAB(ColorScheme colorScheme) {
-    return ScaleTransition(
-      scale: _fabScaleAnimation,
-      child: FloatingActionButton.extended(
-        onPressed: _showSellScreen,
-        backgroundColor: colorScheme.primaryContainer,
-        foregroundColor: colorScheme.onPrimaryContainer,
-        elevation: 3, // * Material 3 elevation
-        highlightElevation: 6,
-        icon: const Icon(Icons.add_business, size: 24),
-        label: const Text(
-          'Sell',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-        ),
-        extendedPadding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
-        ),
-      ),
     );
   }
 }
